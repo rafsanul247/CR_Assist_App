@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "441003180899",
+    "project_id": "cr-assist-fcm",
+    "storage_bucket": "cr-assist-fcm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:441003180899:android:d34bbc7d106c79410cc956",
+        "android_client_info": {
+          "package_name": "com.example.cr_assist"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVzbUliIGk8Q4ZwHQMNo7b3bKerGfVNxM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

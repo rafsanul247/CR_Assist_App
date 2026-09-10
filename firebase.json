@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"android":{"default":{"projectId":"cr-assist-fcm","appId":"1:441003180899:android:d34bbc7d106c79410cc956","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"cr-assist-fcm","configurations":{"android":"1:441003180899:android:d34bbc7d106c79410cc956"}}}}}}
