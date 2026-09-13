@@ -24,10 +24,8 @@ class NoticeController extends GetxController {
   void onInit() {
     super.onInit();
     fetchNotices();
-    // Listen for "a notice was just posted" broadcasts so this controller
-    // (and the UI it drives) refreshes without polling, regardless of who
-    // posted it (this device or any other client in the same batch).
-    _busSub = _noticeBus.stream.listen((_) => refreshNotices());
+    // Listen for background updates without showing global loading spinner
+    _busSub = _noticeBus.stream.listen((_) => refreshNotices(showLoading: false));
   }
 
   @override
@@ -39,15 +37,19 @@ class NoticeController extends GetxController {
   Future<void> fetchMyClassCode() async {
     final result = await _authUseCase.getMyClassCode();
     result.fold(
-          (failure) => null,
-          (code) => classCode.value = code,
+      (failure) => null,
+      (code) => classCode.value = code,
     );
   }
 
-  Future<void> refreshNotices() async {
-    if (isLoading.value) return;
+  /// Refreshes the notices list.
+  /// [showLoading] determines if the global [isLoading] reactive variable should be updated.
+  Future<void> refreshNotices({bool showLoading = true}) async {
+    if (showLoading) {
+      if (isLoading.value) return;
+      isLoading.value = true;
+    }
     
-    isLoading.value = true;
     errorMessage.value = '';
     try {
       final response = await _dioClient.get(ApiEndpoint.notices);
@@ -58,16 +60,17 @@ class NoticeController extends GetxController {
     } catch (e) {
       errorMessage.value = "Failed to fetch notices";
     } finally {
-      isLoading.value = false;
+      if (showLoading) {
+        isLoading.value = false;
+      }
     }
   }
 
-  /// Backwards-compatible alias used by the AppBar refresh icon and
-  /// anywhere else that previously called fetchNotices().
   Future<void> fetchNotices() => refreshNotices();
 
   Future<bool> postNotice(String title, String description) async {
-    isLoading.value = true;
+    // We don't set global isLoading here to avoid flickering the main screen list
+    // The dialog manages its own local loading state
     try {
       final response = await _dioClient.post(
         ApiEndpoint.notices,
@@ -77,26 +80,22 @@ class NoticeController extends GetxController {
         },
       );
 
-      // Build the new notice model straight from the POST response so we
-      // can hand it to the bus without an extra GET round-trip.
       final created = NoticeModel.fromJson(
         response.data is Map<String, dynamic>
             ? response.data as Map<String, dynamic>
             : (response.data['notice'] as Map<String, dynamic>? ??
-            response.data as Map<String, dynamic>),
+                response.data as Map<String, dynamic>),
       );
 
-      // Notify every other mounted controller (other devices, other
-      // screens, students in the same batch) that a notice just landed.
-      // This will trigger the _busSub listener in this controller too,
-      // which calls refreshNotices().
+      // Insert locally for immediate feedback
+      notices.insert(0, created);
+
+      // Emit to the bus - this will trigger a full refresh in the background
       _noticeBus.emit(NoticeAddedEvent(created));
 
       return true;
     } catch (e) {
       return false;
-    } finally {
-      isLoading.value = false;
     }
   }
 }
