@@ -5,6 +5,7 @@ import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/domain/entities/auth_entity.dart';
 import 'package:cr_assist/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:cr_assist/injection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 class AuthController extends GetxController {
@@ -43,6 +44,8 @@ class AuthController extends GetxController {
         universityName:
         StorageService.get<String>(Constants.keyUserUniversityName) ?? '',
       );
+      // অ্যাপ স্টার্ট হওয়ার সময় সাবস্ক্রিপশন নিশ্চিত করা
+      _syncNotifications(user.value!);
     }
   }
 
@@ -54,7 +57,7 @@ class AuthController extends GetxController {
           (failure) => errorMessage.value = failure.message,
           (userData) {
         user.value = userData;
-        _fcmService.syncTokenWithBackend();
+        _syncNotifications(userData);
         AppRouter.go('/main');
       },
     );
@@ -85,7 +88,7 @@ class AuthController extends GetxController {
           (failure) => errorMessage.value = failure.message,
           (userData) {
         user.value = userData;
-        _fcmService.syncTokenWithBackend();
+        _syncNotifications(userData);
         AppRouter.go('/main');
       },
     );
@@ -94,7 +97,23 @@ class AuthController extends GetxController {
 
   Future<void> logout() async {
     await _useCase.logout();
+    await _fcmService.dispose();
     user.value = null;
     AppRouter.go('/login');
+  }
+
+  Future<void> _syncNotifications(UserEntity userData) async {
+    try {
+      await _fcmService.syncTokenWithBackend(
+        batchId: userData.batchId,
+        role: userData.role,
+        universityName: userData.universityName,
+        deptName: userData.deptName,
+        batchName: userData.batchName,
+      );
+    } catch (error, stackTrace) {
+      debugPrint('[FCM] login notification setup failed: $error');
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 }

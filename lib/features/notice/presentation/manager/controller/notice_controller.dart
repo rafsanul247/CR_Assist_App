@@ -45,6 +45,8 @@ class NoticeController extends GetxController {
   }
 
   Future<void> refreshNotices() async {
+    if (isLoading.value) return;
+    
     isLoading.value = true;
     errorMessage.value = '';
     try {
@@ -84,11 +86,10 @@ class NoticeController extends GetxController {
             response.data as Map<String, dynamic>),
       );
 
-      // Refresh this controller's list locally (the user who posted).
-      await refreshNotices();
-
       // Notify every other mounted controller (other devices, other
       // screens, students in the same batch) that a notice just landed.
+      // This will trigger the _busSub listener in this controller too,
+      // which calls refreshNotices().
       _noticeBus.emit(NoticeAddedEvent(created));
 
       return true;

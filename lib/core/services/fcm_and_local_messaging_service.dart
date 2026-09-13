@@ -2,19 +2,27 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:cr_assist/core/routes/app_router.dart';
+import 'dart:async';
 
 // Top-level background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   if (kDebugMode) {
-    print("Handling background message: ${message.messageId}");
+    debugPrint(
+      'Handling background message: ${message.messageId}, '
+      'title: ${message.notification?.title}, body: ${message.notification?.body}',
+    );
   }
 }
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localPlugin = FlutterLocalNotificationsPlugin();
+  StreamSubscription<RemoteMessage>? _foregroundSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
+  bool _initialized = false;
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'high_importance_channel',
@@ -24,6 +32,8 @@ class NotificationService {
   );
 
   Future<void> initialize() async {
+    if (_initialized) return;
+
     // 1. Request Permission
     NotificationSettings settings = await _fcm.requestPermission(
       alert: true,
@@ -32,8 +42,12 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      if (kDebugMode) print('User declined notification permissions');
-      return;
+      if (kDebugMode) {
+        debugPrint(
+          'FCM notification permission not authorized: '
+          '${settings.authorizationStatus}',
+        );
+      }
     }
 
     // 2. Setup Local Notifications & Android Channel
@@ -53,7 +67,8 @@ class NotificationService {
 
     // 5. Setup Listeners
     _setupForegroundListener();
-    _setupInteractedMessage();
+    await _setupInteractedMessage();
+    _initialized = true;
   }
 
   Future<void> _setupLocalNotifications() async {
@@ -73,8 +88,16 @@ class NotificationService {
   }
 
   void _setupForegroundListener() {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _foregroundSubscription ??= FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       RemoteNotification? notification = message.notification;
+
+      if (kDebugMode) {
+        debugPrint(
+          'Foreground FCM message: ${message.messageId}, '
+          'from: ${message.from}, title: ${notification?.title}, '
+          'body: ${notification?.body}, data: ${message.data}',
+        );
+      }
 
       if (notification != null) {
         _localPlugin.show(
@@ -110,11 +133,23 @@ class NotificationService {
     }
 
     // Background state
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleNavigation);
+    _openedAppSubscription ??= FirebaseMessaging.onMessageOpenedApp.listen(_handleNavigation);
   }
 
   void _handleNavigation(RemoteMessage message) {
-    if (kDebugMode) print("Notification clicked with data: ${message.data}");
-    // TODO: Handle navigation based on payload
+    if (kDebugMode) {
+      debugPrint(
+        'Notification clicked: ${message.messageId}, data: ${message.data}',
+      );
+    }
+    AppRouter.go('/notice');
+  }
+
+  Future<void> dispose() async {
+    await _foregroundSubscription?.cancel();
+    await _openedAppSubscription?.cancel();
+    _foregroundSubscription = null;
+    _openedAppSubscription = null;
+    _initialized = false;
   }
 }

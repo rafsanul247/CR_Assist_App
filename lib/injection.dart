@@ -36,7 +36,9 @@ final sl = GetIt.instance;
 
 Future<void> init() async {
   Get.put(NoticeBus());
-  sl.registerLazySingleton<FcmService>(() => FcmService());
+  sl.registerLazySingleton<FcmService>(
+    () => FcmService(dioClient: sl()),
+  );
   _setUpCore();
   await _setUpAuth();
   await _setUpNotice();

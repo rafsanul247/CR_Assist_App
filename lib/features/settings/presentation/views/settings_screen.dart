@@ -230,45 +230,48 @@ class _SettingsTile extends StatelessWidget {
         ? UColors.error
         : UColors.primary;
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: iconBgColor,
-          borderRadius: BorderRadius.circular(10),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: iconBgColor,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(item.icon, color: iconColor, size: 22),
         ),
-        child: Icon(item.icon, color: iconColor, size: 22),
-      ),
-      title: Text(
-        item.title,
-        style: TextStyle(
-          color: activeColor,
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
+        title: Text(
+          item.title,
+          style: TextStyle(
+            color: activeColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
         ),
-      ),
-      subtitle: item.subtitle != null
-          ? Text(
-        item.subtitle!,
-        style: const TextStyle(
+        subtitle: item.subtitle != null
+            ? Text(
+          item.subtitle!,
+          style: const TextStyle(
+            color: UColors.textSecondary,
+            fontSize: 12,
+          ),
+        )
+            : null,
+        trailing: const Icon(
+          Iconsax.arrow_right_3,
+          size: 18,
           color: UColors.textSecondary,
-          fontSize: 12,
         ),
-      )
-          : null,
-      trailing: const Icon(
-        Iconsax.arrow_right_3,
-        size: 18,
-        color: UColors.textSecondary,
+        onTap: () {
+          if (item.onTap != null) {
+            item.onTap!();
+          } else if (item.route != null) {
+            context.push(item.route!);
+          }
+        },
       ),
-      onTap: () {
-        if (item.onTap != null) {
-          item.onTap!();
-        } else if (item.route != null) {
-          context.push(item.route!);
-        }
-      },
     );
   }
 }

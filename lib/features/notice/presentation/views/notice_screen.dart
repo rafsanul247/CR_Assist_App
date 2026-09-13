@@ -10,18 +10,32 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 
-class NoticeScreen extends StatelessWidget {
+class NoticeScreen extends StatefulWidget {
   const NoticeScreen({super.key});
 
   @override
+  State<NoticeScreen> createState() => _NoticeScreenState();
+}
+
+class _NoticeScreenState extends State<NoticeScreen> {
+  late final AuthController authController;
+  late final NoticeController noticeController;
+
+  @override
+  void initState() {
+    super.initState();
+    authController = Get.find<AuthController>();
+    noticeController = Get.find<NoticeController>();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && authController.isCR) {
+        noticeController.fetchMyClassCode();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final AuthController authController = Get.find<AuthController>();
-    final NoticeController noticeController = Get.put(NoticeController());
-
-    if (authController.isCR) {
-      noticeController.fetchMyClassCode();
-    }
-
     return Scaffold(
       backgroundColor: UColors.dark,
       appBar: AppBar(
@@ -252,40 +266,79 @@ class NoticeScreen extends StatelessWidget {
   void _showAddNoticeDialog(BuildContext context, NoticeController controller) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
+    final isDialogLoading = false.obs;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: UColors.containerDark,
         title: const Text("Post New Notice", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(controller: titleController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: "Title", hintStyle: TextStyle(color: UColors.textSecondary))),
-            const SizedBox(height: 12),
-            TextField(controller: descController, maxLines: 3, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: "Description", hintStyle: TextStyle(color: UColors.textSecondary))),
-          ],
+        content: SizedBox(
+          width: 420,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(controller: titleController, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: "Title", hintStyle: TextStyle(color: UColors.textSecondary))),
+                const SizedBox(height: 12),
+                TextField(controller: descController, maxLines: 3, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(hintText: "Description", hintStyle: TextStyle(color: UColors.textSecondary))),
+              ],
+            ),
+          ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleController.text.isNotEmpty) {
-                final success = await controller.postNotice(titleController.text, descController.text);
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? "Notice posted successfully" : "Failed to post notice"),
-                      backgroundColor: success ? UColors.success : UColors.error,
-                    ),
-                  );
-                }
+          TextButton(
+            onPressed: () {
+              if (!isDialogLoading.value) {
+                FocusScope.of(dialogContext).unfocus(); // 👈 add
+                Navigator.pop(dialogContext);
               }
             },
-            child: const Text("Post"),
+            child: const Text("Cancel"),
           ),
+          Obx(() => ElevatedButton(
+            onPressed: isDialogLoading.value ? null : () async {
+              final title = titleController.text.trim();
+              final description = descController.text.trim();
+
+              if (title.isEmpty || description.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Title and description are required")),
+                );
+                return;
+              }
+
+              FocusScope.of(dialogContext).unfocus(); // 👈 add — pop এর আগেই unfocus
+              isDialogLoading.value = true;
+              final success = await controller.postNotice(title, description);
+              isDialogLoading.value = false;
+
+              if (dialogContext.mounted) {
+                Navigator.pop(dialogContext);
+              }
+
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success ? "Notice posted successfully" : "Failed to post notice"),
+                    backgroundColor: success ? UColors.success : UColors.error,
+                  ),
+                );
+              }
+            },
+            child: isDialogLoading.value
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                : const Text("Post"),
+          )),
         ],
       ),
-    );
+    ).then((_) {
+      // 👇 dispose কে next frame এ push করা হলো, যাতে pop transition পুরোপুরি শেষ হয়
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        titleController.dispose();
+        descController.dispose();
+      });
+    });
   }
 }
