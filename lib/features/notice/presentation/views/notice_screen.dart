@@ -294,9 +294,8 @@ class _NoticeScreenState extends State<NoticeScreen> {
         barrierDismissible: false,
         builder: (dialogContext) => StatefulBuilder(
           builder: (stContext, setDialogState) => AlertDialog(
-            backgroundColor: UColors.containerDark,
-            title: const Text("Post New Notice",
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            backgroundColor: Theme.of(stContext).colorScheme.surface,
+            title: Text("Post New Notice", style: stContext.tt.titleLarge),
             content: SizedBox(
               width: 420,
               child: SingleChildScrollView(
@@ -305,25 +304,25 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   children: [
                     TextField(
                         controller: titleController,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
+                      style: TextStyle(color: stContext.tt.bodyLarge?.color),
+                      decoration: InputDecoration(
                             hintText: "Title",
-                            hintStyle: TextStyle(color: UColors.textSecondary))),
+                        hintStyle: TextStyle(color: stContext.tt.bodySmall?.color))),
                     const SizedBox(height: 12),
                     TextField(
                         controller: descController,
                         maxLines: 3,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: stContext.tt.bodyLarge?.color),
+                        decoration: InputDecoration(
                             hintText: "Description",
-                            hintStyle: TextStyle(color: UColors.textSecondary))),
+                          hintStyle: TextStyle(color: stContext.tt.bodySmall?.color))),
                   ],
                 ),
               ),
             ),
             actions: [
               TextButton(
-                onPressed: isDialogLoading ? null : () => Navigator.pop(dialogContext, false),
+                onPressed: isDialogLoading ? null : () => Navigator.pop(dialogContext),
                 child: const Text("Cancel"),
               ),
               ElevatedButton(
@@ -368,6 +367,8 @@ class _NoticeScreenState extends State<NoticeScreen> {
         AppFeedback.showError(context, message: 'Failed to post notice', title: 'Notice failed');
       }
     } finally {
+      // Let the dialog route finish removing its TextFields before disposal.
+      await Future<void>.delayed(const Duration(milliseconds: 250));
       titleController.dispose();
       descController.dispose();
     }
