@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/controller/registration_controller.dart';
 import 'package:flutter/material.dart';
@@ -90,11 +91,14 @@ class ClassCode extends StatelessWidget {
                       onPressed: () async {
                         if (controller.classCodeController.text.length < 4) {
                           controller.errorMessage.value = "Short Code";
+                          AppFeedback.showError(context, message: 'Please enter a valid class code.', title: 'Wrong class code');
                           return;
                         }
                         final success = await controller.register();
                         if (success) {
                           AppRouter.go('/main');
+                        } else if (context.mounted && controller.errorMessage.value.isNotEmpty) {
+                          AppFeedback.showError(context, message: controller.errorMessage.value, title: 'Wrong class code');
                         }
                         // If failed, controller.errorMessage is already populated and UI will show it
                       },

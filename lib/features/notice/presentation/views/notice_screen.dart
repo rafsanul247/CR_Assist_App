@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:cr_assist/features/notice/data/models/notice_model.dart';
 import 'package:cr_assist/features/notice/presentation/manager/controller/notice_controller.dart';
@@ -278,11 +279,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   IconButton(
                     onPressed: () {
                       Clipboard.setData(ClipboardData(text: controller.classCode.value));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Class code copied to clipboard"),
-                            backgroundColor: UColors.primary),
-                      );
+                      AppFeedback.showInfo(context, message: 'Class code copied to clipboard');
                     },
                     icon: const Icon(Iconsax.copy, color: Colors.white),
                     style: IconButton.styleFrom(
@@ -347,9 +344,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                         final description = descController.text.trim();
 
                         if (title.isEmpty || description.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Title and description are required")),
-                          );
+                          AppFeedback.showError(context, message: 'Title and description are required');
                           return;
                         }
 
@@ -376,13 +371,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
         ),
       );
 
-      if (success != null && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(success ? "Notice posted successfully" : "Failed to post notice"),
-            backgroundColor: success ? UColors.success : UColors.error,
-          ),
-        );
+      if (success == null || !context.mounted) return;
+      if (success) {
+        AppFeedback.showSuccess(context, message: 'Notice posted successfully');
+      } else {
+        AppFeedback.showError(context, message: 'Failed to post notice', title: 'Notice failed');
       }
     } finally {
       titleController.dispose();

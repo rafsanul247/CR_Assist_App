@@ -44,7 +44,9 @@ class RegistrationController extends GetxController {
   }
 
   String? universityValidate(String? value) {
-    if (value == null || value.isEmpty) return "Please enter your university name!";
+    if (value == null || value.isEmpty) {
+      return "Please enter your university name!";
+    }
     return null;
   }
 
@@ -76,31 +78,33 @@ class RegistrationController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final bool isCR = Get.find<RegiCheckBoxController>().isSelected.value;
-
-    final result = await _authUseCase.register(
-      username: usernameController.text.trim(),
-      email: emailController.text.trim(),
-      password: passwordController.text,
-      universityName: universityNameController.text.trim(),
-      deptName: deptNameController.text.trim(),
-      batchName: batchNameController.text.trim(),
-      isCR: isCR,
-      classCode: isCR ? null : classCodeController.text.trim(),
-    );
-
     bool success = false;
-    result.fold(
-      (failure) => errorMessage.value = failure.message,
-      (user) {
+    try {
+      final bool isCR = Get.find<RegiCheckBoxController>().isSelected.value;
+
+      final result = await _authUseCase.register(
+        username: usernameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text,
+        universityName: universityNameController.text.trim(),
+        deptName: deptNameController.text.trim(),
+        batchName: batchNameController.text.trim(),
+        isCR: isCR,
+        classCode: isCR ? null : classCodeController.text.trim(),
+      );
+
+      result.fold((failure) => errorMessage.value = failure.message, (user) {
         if (sl.isRegistered<AuthController>()) {
           sl<AuthController>().user.value = user;
         }
         success = true;
-      },
-    );
+      });
+    } catch (error) {
+      errorMessage.value = error.toString();
+    } finally {
+      isLoading.value = false;
+    }
 
-    isLoading.value = false;
     return success;
   }
 

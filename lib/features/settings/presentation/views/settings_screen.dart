@@ -50,19 +50,19 @@ class SettingsScreen extends StatelessWidget {
               items: [
                 const SettingsItemModel(
                   title: "Profile",
-                  subtitle: "Edit personal information and photo",
-                  icon: Iconsax.user_square,
+                  subtitle: "See Batch details",
+                  icon: Iconsax.user,
                   route: '/profile',
                 ),
                 const SettingsItemModel(
                   title: "Notifications",
-                  subtitle: "Manage reminders and class alerts",
+                  subtitle: "Reminders and class alerts",
                   icon: Iconsax.notification,
                   route: '/notice',
                 ),
                 const SettingsItemModel(
                   title: "Class & Semester",
-                  subtitle: "Manage active academic courses",
+                  subtitle: "Your Semesters",
                   icon: Iconsax.teacher,
                   route: '/main',
                 ),
@@ -86,7 +86,7 @@ class SettingsScreen extends StatelessWidget {
               items: [
                 SettingsItemModel(
                   title: "Log Out",
-                  subtitle: "Sign out of your account on this device",
+                  subtitle: "Sign out",
                   icon: Iconsax.logout,
                   isDestructive: true,
                   onTap: () => LogoutDialog.show(context),
@@ -110,7 +110,7 @@ class _UserProfileCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: UColors.containerDark,
+        color: UColors.primary.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: UColors.borderDark.withValues(alpha: 0.5),
@@ -120,11 +120,11 @@ class _UserProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 28,
-            backgroundColor: UColors.primary.withValues(alpha: 0.1),
+            backgroundColor: UColors.primary.withValues(alpha: 0.9),
             child: const Icon(
               Iconsax.user,
               size: 32,
-              color: UColors.primary,
+              color: UColors.white,
             ),
           ),
           const SizedBox(width: 16),
@@ -222,9 +222,6 @@ class _SettingsTile extends StatelessWidget {
         ? UColors.error
         : Colors.white;
 
-    final iconBgColor = item.isDestructive
-        ? UColors.error.withValues(alpha: 0.1)
-        : UColors.dark.withValues(alpha: 0.5);
 
     final iconColor = item.isDestructive
         ? UColors.error
@@ -237,7 +234,7 @@ class _SettingsTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: iconBgColor,
+            color: UColors.dark.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(item.icon, color: iconColor, size: 22),
@@ -260,7 +257,7 @@ class _SettingsTile extends StatelessWidget {
         )
             : null,
         trailing: const Icon(
-          Iconsax.arrow_right_3,
+          Iconsax.arrow_right_2,
           size: 18,
           color: UColors.textSecondary,
         ),

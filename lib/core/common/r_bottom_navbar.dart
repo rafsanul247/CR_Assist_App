@@ -36,45 +36,52 @@ class _MainScreenState extends State<MainScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: UColors.navBg,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
+      bottomNavigationBar: Theme(
+        // ১. এখানে স্প্ল্যাশ এবং আইকন প্রেসড ইফেক্ট পুরোপুরি বন্ধ করা হয়েছে
+        data: Theme.of(context).copyWith(
+          splashFactory: NoSplash.splashFactory, // আঙুলের ছোপ বা রিপল বন্ধ করবে
+          highlightColor: Colors.transparent,   // চেপে রাখলে হওয়া হাইলাইট বন্ধ করবে
         ),
-        child: BottomNavigationBar(
-          backgroundColor: UColors.navBg,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: UColors.navActive,
-          unselectedItemColor: UColors.navInactive,
-          currentIndex: _currentIndex,
-          showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-          onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Iconsax.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Iconsax.notification),
-              label: 'Notice',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Iconsax.setting),
-              label: "Settings",
-            ),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: UColors.navBg,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
+              ),
+            ],
+          ),
+          child: BottomNavigationBar(
+            backgroundColor: UColors.navBg,
+            type: BottomNavigationBarType.fixed,
+            selectedItemColor: UColors.navActive,
+            unselectedItemColor: UColors.navInactive,
+            currentIndex: _currentIndex,
+            showUnselectedLabels: true,
+            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Iconsax.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Iconsax.notification),
+                label: 'Notice',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Iconsax.setting),
+                label: "Settings",
+              ),
+            ],
+          ),
         ),
       ),
     );

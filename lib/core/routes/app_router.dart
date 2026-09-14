@@ -41,64 +41,64 @@ class AppRouter {
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const SplashScreen(),
+        pageBuilder: (context, state) => _page(state, const SplashScreen()),
       ),
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        pageBuilder: (context, state) => _page(state, const LoginScreen()),
       ),
       GoRoute(
         path: '/register',
         name: 'register',
-        builder: (context, state) => const RegistrationScreen(),
+        pageBuilder: (context, state) => _page(state, const RegistrationScreen()),
       ),
       GoRoute(
         path: '/class-code',
         name: 'class-code',
-        builder: (context, state) => const ClassCode(),
+        pageBuilder: (context, state) => _page(state, const ClassCode()),
       ),
       GoRoute(
         path: '/main',
         name: 'main',
-        builder: (context, state) => const MainScreen(),
+        pageBuilder: (context, state) => _page(state, const MainScreen()),
       ),
       GoRoute(
         path: '/profile',
         name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
+        pageBuilder: (context, state) => _page(state, const ProfileScreen()),
       ),
       GoRoute(
         path: '/notice',
         name: 'notice',
-        builder: (context, state) => const NoticeScreen(),
+        pageBuilder: (context, state) => _page(state, const NoticeScreen()),
       ),
       GoRoute(
         path: '/subjects',
         name: 'subjects',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return SubjectListView(
+          return _page(state, SubjectListView(
             semesterId: extra['semesterId'] as int? ?? 0,
             semesterName: extra['semesterName'] as String? ?? 'Subjects',
-          );
+          ));
         },
       ),
       GoRoute(
         path: '/resources',
         name: 'resources',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return ResourceListView(
+          return _page(state, ResourceListView(
             subjectId: extra['subjectId'] as int? ?? 0,
             subjectName: extra['subjectName'] as String? ?? 'Resources',
-          );
+          ));
         },
       ),
       GoRoute(
         path: '/about',
         name: 'about',
-        builder: (context, state) => const AboutCrAssistant(),
+        pageBuilder: (context, state) => _page(state, const AboutCrAssistant()),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
@@ -107,6 +107,25 @@ class AppRouter {
       ),
     ),
   );
+
+  static CustomTransitionPage<void> _page(GoRouterState state, Widget child) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 360),
+      reverseTransitionDuration: const Duration(milliseconds: 280),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(begin: const Offset(0.04, 0), end: Offset.zero).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 
   static void go(String path) {
     _router.go(path);

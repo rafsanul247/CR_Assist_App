@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
@@ -104,12 +105,11 @@ class ResourceListView extends StatelessWidget {
               final success = await controller.deleteResource(subjectId, resourceId);
               if (context.mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? "Resource deleted successfully" : controller.errorMessage.value),
-                    backgroundColor: success ? UColors.success : UColors.error,
-                  ),
-                );
+                if (success) {
+                  AppFeedback.showSuccess(context, message: 'Resource deleted successfully');
+                } else {
+                  AppFeedback.showError(context, message: controller.errorMessage.value, title: 'Delete failed');
+                }
               }
             },
             child: const Text("Delete", style: TextStyle(color: Colors.white)),
@@ -201,19 +201,16 @@ class ResourceListView extends StatelessWidget {
 
         final success = await controller.uploadResourceFiles(subjectId: subjectId, title: title, filePaths: filePaths, type: type);
         if (context.mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(
-               content: Text(success ? "Upload successful" : "Upload failed"),
-               backgroundColor: success ? UColors.success : UColors.error,
-             ),
-           );
+           if (success) {
+             AppFeedback.showSuccess(context, message: 'Upload successful');
+           } else {
+             AppFeedback.showError(context, message: 'Upload failed', title: 'Upload failed');
+           }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error picking files: $e"), backgroundColor: UColors.error),
-        );
+        AppFeedback.showError(context, message: 'Error picking files: $e', title: 'File selection failed');
       }
     }
   }

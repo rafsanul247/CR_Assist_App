@@ -13,23 +13,25 @@ class $AssetsIconsGen {
   const $AssetsIconsGen();
 
   final AssetGenImage appIconBlack = const AssetGenImage(
-      'assets/icons/app_icon_black.png');
+    'assets/icons/app_icon_black.png',
+  );
   final AssetGenImage appIconWhite = const AssetGenImage(
-      'assets/icons/app_icon_white.png');
+    'assets/icons/app_icon_white.png',
+  );
 }
 
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
   final AssetGenImage rafsanProfile = const AssetGenImage(
-      'assets/images/rafsan_profile.jpg');
+    'assets/images/rafsan_profile.jpg',
+  );
 }
 
 class AssetGenImage {
   const AssetGenImage(this._assetName, {this.size, this.flavors = const {}});
 
   final String _assetName;
-
 
   final Size? size;
   final Set<String> flavors;
@@ -87,15 +89,8 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({
-    AssetBundle? bundle,
-    String? package,
-  }) {
-    return AssetImage(
-      _assetName,
-      bundle: bundle,
-      package: package,
-    );
+  ImageProvider provider({AssetBundle? bundle, String? package}) {
+    return AssetImage(_assetName, bundle: bundle, package: package);
   }
 
   Widget custom({
@@ -112,4 +107,3 @@ class AssetGenImage {
 
   String get keyName => _assetName;
 }
-

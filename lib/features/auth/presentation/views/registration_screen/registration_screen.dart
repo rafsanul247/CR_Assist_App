@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/controller/registration_controller.dart';
@@ -141,6 +142,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         if (isCR) {
                           final success = await _controller.register();
                           if (success) AppRouter.go('/main');
+                          if (!success && context.mounted && _controller.errorMessage.value.isNotEmpty) {
+                            AppFeedback.showError(context, message: _controller.errorMessage.value);
+                          }
                         } else {
                           AppRouter.push('/class-code');
                         }

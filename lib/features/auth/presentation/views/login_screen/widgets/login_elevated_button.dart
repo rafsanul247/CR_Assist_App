@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/common/elevated_button.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/constants/texts.dart';
 import 'package:cr_assist/features/auth/presentation/views/login_screen/controller/login_controller.dart';
@@ -33,9 +34,7 @@ class LoginElevatedButton extends StatelessWidget {
           if (success && context.mounted) {
             AppRouter.go('/main');
           } else if (context.mounted && controller.errorMessage.value.isNotEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(controller.errorMessage.value)),
-            );
+            AppFeedback.showError(context, message: controller.errorMessage.value);
           }
         },
         child: Text(UTexts.login),

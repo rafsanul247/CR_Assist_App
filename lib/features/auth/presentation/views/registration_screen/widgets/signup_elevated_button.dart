@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/routes/app_router.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/common/elevated_button.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/controller/registration_controller.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/widgets/cr_registration_checkbox.dart';
@@ -29,8 +30,8 @@ class USignUpButton extends StatelessWidget {
             final success = await controller.register();
             if (success) {
               AppRouter.go('/main');
-            } else if (controller.errorMessage.value.isNotEmpty) {
-              Get.snackbar("Error", controller.errorMessage.value);
+            } else if (context.mounted && controller.errorMessage.value.isNotEmpty) {
+              AppFeedback.showError(context, message: controller.errorMessage.value);
             }
           } else {
             // Student flow: First go to Class Code screen

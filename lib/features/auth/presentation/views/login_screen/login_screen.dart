@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/presentation/views/login_screen/controller/login_controller.dart';
@@ -107,6 +108,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           final success = await _controller.login();
                           if (success) {
                             AppRouter.go('/main');
+                          } else if (context.mounted && _controller.errorMessage.value.isNotEmpty) {
+                            AppFeedback.showError(context, message: _controller.errorMessage.value);
                           }
                         }
                       },

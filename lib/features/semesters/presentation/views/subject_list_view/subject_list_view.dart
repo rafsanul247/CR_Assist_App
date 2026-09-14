@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
@@ -126,12 +127,11 @@ class _SubjectListViewState extends State<SubjectListView> {
               final success = await controller.deleteSubject(widget.semesterId, subjectId);
               if (context.mounted) {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(success ? "Subject deleted successfully" : controller.errorMessage.value),
-                    backgroundColor: success ? UColors.success : UColors.error,
-                  ),
-                );
+                if (success) {
+                  AppFeedback.showSuccess(context, message: 'Subject deleted successfully');
+                } else {
+                  AppFeedback.showError(context, message: controller.errorMessage.value, title: 'Delete failed');
+                }
               }
             },
             child: const Text("Delete", style: TextStyle(color: Colors.white)),
@@ -167,12 +167,11 @@ class _SubjectListViewState extends State<SubjectListView> {
                 final success = await controller.addSubject(widget.semesterId, nameController.text);
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(success ? "Subject added successfully" : controller.errorMessage.value),
-                      backgroundColor: success ? UColors.success : UColors.error,
-                    ),
-                  );
+                  if (success) {
+                    AppFeedback.showSuccess(context, message: 'Subject added successfully');
+                  } else {
+                    AppFeedback.showError(context, message: controller.errorMessage.value, title: 'Add failed');
+                  }
                 }
               }
             },

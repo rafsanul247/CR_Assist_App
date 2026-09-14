@@ -44,23 +44,25 @@ class LoginController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
 
-    final result = await _authUseCase.login(
-      email: emailController.text.trim(),
-      password: passwordController.text,
-    );
-
     bool success = false;
-    result.fold(
-      (failure) => errorMessage.value = failure.message,
-      (user) {
+    try {
+      final result = await _authUseCase.login(
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
+
+      result.fold((failure) => errorMessage.value = failure.message, (user) {
         if (sl.isRegistered<AuthController>()) {
           sl<AuthController>().user.value = user;
         }
         success = true;
-      },
-    );
+      });
+    } catch (error) {
+      errorMessage.value = error.toString();
+    } finally {
+      isLoading.value = false;
+    }
 
-    isLoading.value = false;
     return success;
   }
 
