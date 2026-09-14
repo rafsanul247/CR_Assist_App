@@ -29,9 +29,13 @@ class ResourceListView extends StatelessWidget {
     final SemestersController controller = Get.find<SemestersController>();
     final AuthController authController = Get.find<AuthController>();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      controller.fetchResources(subjectId);
-    });
+    if (controller.currentSubjectId != subjectId && !controller.isLoading.value) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted && controller.currentSubjectId != subjectId) {
+          controller.fetchResources(subjectId);
+        }
+      });
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -49,7 +53,7 @@ class ResourceListView extends StatelessWidget {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.resources.isEmpty) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator(color: UColors.primary));
         }
 
@@ -69,7 +73,7 @@ class ResourceListView extends StatelessWidget {
                   ],
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 70),
                   itemCount: controller.resources.length,
                   itemBuilder: (context, index) {
                     final resource = controller.resources[index];

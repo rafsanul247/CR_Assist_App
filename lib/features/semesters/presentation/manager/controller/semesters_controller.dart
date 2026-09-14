@@ -27,6 +27,8 @@ class SemestersController extends GetxController {
 
   int? currentSemesterId;
   int? currentSubjectId;
+  int _subjectRequestId = 0;
+  int _resourceRequestId = 0;
 
   @override
   void onInit() {
@@ -64,9 +66,12 @@ class SemestersController extends GetxController {
 
   Future<void> fetchSubjects(int semesterId) async {
     currentSemesterId = semesterId;
+    final requestId = ++_subjectRequestId;
+    subjects.clear();
     isLoading.value = true;
     errorMessage.value = '';
     final result = await _useCase.getSubjects(semesterId);
+    if (requestId != _subjectRequestId || currentSemesterId != semesterId) return;
     result.fold(
           (failure) => errorMessage.value = failure.message,
           (data) => subjects.assignAll(data),
@@ -92,9 +97,12 @@ class SemestersController extends GetxController {
 
   Future<void> fetchResources(int subjectId) async {
     currentSubjectId = subjectId;
+    final requestId = ++_resourceRequestId;
+    resources.clear();
     isLoading.value = true;
     errorMessage.value = '';
     final result = await _useCase.getResources(subjectId);
+    if (requestId != _resourceRequestId || currentSubjectId != subjectId) return;
     result.fold(
           (failure) => errorMessage.value = failure.message,
           (data) => resources.assignAll(data),

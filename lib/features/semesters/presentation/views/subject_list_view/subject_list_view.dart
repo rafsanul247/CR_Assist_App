@@ -62,7 +62,7 @@ class _SubjectListViewState extends State<SubjectListView> {
         centerTitle: true,
       ),
       body: Obx(() {
-        if (controller.isLoading.value && controller.subjects.isEmpty) {
+        if (controller.isLoading.value) {
           return const Center(child: CircularProgressIndicator(color: UColors.primary));
         }
 
