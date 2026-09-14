@@ -31,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,
@@ -44,7 +44,7 @@ class _MainScreenState extends State<MainScreen> {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: UColors.navBg,
+            color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.2),
@@ -54,7 +54,7 @@ class _MainScreenState extends State<MainScreen> {
             ],
           ),
           child: BottomNavigationBar(
-            backgroundColor: UColors.navBg,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             type: BottomNavigationBarType.fixed,
             selectedItemColor: UColors.navActive,
             unselectedItemColor: UColors.navInactive,

@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/controller/registration_controller.dart';
@@ -35,7 +36,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: context.isDark ? UColors.dark : UColors.light,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -67,7 +68,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     Text(
                       Constants.appName,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: context.isDark ? Colors.white : UColors.textDark,
                         fontSize: 18.spMin,
                         fontWeight: FontWeight.bold,
                       ),
@@ -79,7 +80,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Text(
                   "Create Account",
                   style: TextStyle(
-                    color: UColors.textPrimary,
+                    color: context.isDark ? UColors.textPrimary : UColors.textDark,
                     fontSize: 28.spMin,
                     fontWeight: FontWeight.bold,
                   ),
@@ -87,7 +88,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Text(
                   "Join your batch and start collaborating",
                   style: TextStyle(
-                    color: UColors.textSecondary,
+                    color: context.isDark ? UColors.textSecondary : UColors.darkGrey,
                     fontSize: 14.spMin,
                   ),
                 ),
@@ -125,7 +126,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Container(
                   padding: EdgeInsets.all(4.w),
                   decoration: BoxDecoration(
-                    color: UColors.containerDark,
+                    color: context.isDark ? UColors.containerDark : UColors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const CrRegistrationCheckbox(),
@@ -161,7 +162,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account?", style: TextStyle(color: Colors.white70)),
+                    Text("Already have an account?", style: TextStyle(color: context.isDark ? Colors.white70 : UColors.darkGrey)),
                     TextButton(
                       onPressed: () => AppRouter.pop(),
                       child: const Text("Login", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: UColors.primary)),
@@ -180,11 +181,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: context.isDark ? Colors.white : UColors.textDark),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: UColors.textSecondary),
+        hintStyle: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey),
         prefixIcon: Icon(icon, color: UColors.primary, size: 20),
         suffixIcon: isPassword 
           ? IconButton(
@@ -193,7 +194,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             )
           : null,
         filled: true,
-        fillColor: UColors.containerDark,
+        fillColor: context.isDark ? UColors.containerDark : UColors.white,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Colors.transparent)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: UColors.primary, width: 1.5)),

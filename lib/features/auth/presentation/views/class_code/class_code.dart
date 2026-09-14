@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/controller/registration_controller.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,7 @@ class ClassCode extends StatelessWidget {
     final RegistrationController controller = Get.find<RegistrationController>();
 
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: context.isDark ? UColors.dark : UColors.light,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -38,21 +39,21 @@ class ClassCode extends StatelessWidget {
                 child: const Icon(Iconsax.key, color: UColors.primary, size: 32),
               ),
               SizedBox(height: 24.h),
-              Text("Enter Class Code", style: TextStyle(color: UColors.textPrimary, fontSize: 26.spMin, fontWeight: FontWeight.bold)),
+              Text("Enter Class Code", style: TextStyle(color: context.isDark ? UColors.textPrimary : UColors.textDark, fontSize: 26.spMin, fontWeight: FontWeight.bold)),
               SizedBox(height: 12.h),
-              const Text("Please enter the unique code provided by your CR to join your batch.", style: TextStyle(color: UColors.textSecondary)),
+              Text("Please enter the unique code provided by your CR to join your batch.", style: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey)),
               SizedBox(height: 40.h),
               
               TextField(
                 controller: controller.classCodeController,
                 autofocus: true,
-                style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
+                style: TextStyle(color: context.isDark ? Colors.white : UColors.textDark, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 8),
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
                   hintText: "######",
                   hintStyle: TextStyle(color: UColors.textSecondary.withValues(alpha: 0.3)),
                   filled: true,
-                  fillColor: UColors.containerDark,
+                  fillColor: context.isDark ? UColors.containerDark : UColors.white,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),

@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/presentation/views/login_screen/controller/login_controller.dart';
@@ -34,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: context.isDark ? UColors.dark : UColors.light,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -58,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     "Welcome to ${Constants.appName}",
                     style: TextStyle(
-                      color: UColors.textPrimary,
+                      color: context.isDark ? UColors.textPrimary : UColors.textDark,
                       fontSize: 28.spMin,
                       fontWeight: FontWeight.bold,
                     ),
@@ -66,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     "Login to manage your class easily",
                     style: TextStyle(
-                      color: UColors.textSecondary,
+                      color: context.isDark ? UColors.textSecondary : UColors.darkGrey,
                       fontSize: 14.spMin,
                     ),
                   ),
@@ -131,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Don't have an account?", style: TextStyle(color: UColors.textSecondary)),
+                      Text("Don't have an account?", style: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey)),
                       TextButton(
                         onPressed: () => AppRouter.push('/register'),
                         child: const Text("Register", style: TextStyle(fontSize: 14, color: UColors.primary, fontWeight: FontWeight.bold)),
@@ -159,11 +160,11 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(color: context.isDark ? Colors.white : UColors.textDark),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: UColors.textSecondary),
+        hintStyle: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey),
         prefixIcon: Icon(icon, color: UColors.primary, size: 20),
         suffixIcon: isPassword 
           ? IconButton(
@@ -172,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
             )
           : null,
         filled: true,
-        fillColor: UColors.containerDark,
+        fillColor: context.isDark ? UColors.containerDark : UColors.white,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,

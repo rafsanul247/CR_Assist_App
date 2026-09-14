@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
@@ -46,17 +47,17 @@ class _SubjectListViewState extends State<SubjectListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: UColors.textPrimary),
+          icon: Icon(Iconsax.arrow_left_2, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => AppRouter.pop(),
         ),
         title: Text(
           widget.semesterName,
-          style: const TextStyle(color: UColors.textPrimary, fontWeight: FontWeight.bold),
+          style: context.tt.titleLarge,
         ),
         centerTitle: true,
       ),
@@ -72,12 +73,12 @@ class _SubjectListViewState extends State<SubjectListView> {
         return RefreshIndicator(
           onRefresh: () => controller.fetchSubjects(widget.semesterId),
           color: UColors.primary,
-          backgroundColor: UColors.containerDark,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           child: controller.subjects.isEmpty
               ? ListView(
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                    const Center(child: Text("No subjects found", style: TextStyle(color: UColors.textSecondary))),
+                    Center(child: Text("No subjects found", style: context.tt.bodyMedium)),
                   ],
                 )
               : ListView.builder(
@@ -116,9 +117,9 @@ class _SubjectListViewState extends State<SubjectListView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: UColors.containerDark,
-        title: const Text("Delete Subject", style: TextStyle(color: UColors.textPrimary)),
-        content: const Text("Are you sure? All resources will be deleted.", style: TextStyle(color: UColors.textSecondary)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text("Delete Subject", style: context.tt.titleLarge),
+        content: Text("Are you sure? All resources will be deleted.", style: context.tt.bodyMedium),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           ElevatedButton(
@@ -146,16 +147,16 @@ class _SubjectListViewState extends State<SubjectListView> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: UColors.containerDark,
-        title: const Text("Add New Subject", style: TextStyle(color: UColors.textPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text("Add New Subject", style: context.tt.titleLarge),
         content: TextField(
           controller: nameController,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: "Enter subject name",
-            hintStyle: const TextStyle(color: UColors.textSecondary),
+            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
             filled: true,
-            fillColor: UColors.dark,
+            fillColor: Theme.of(context).scaffoldBackgroundColor,
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           ),
         ),
@@ -201,7 +202,7 @@ class _SubjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: UColors.containerDark,
+      color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
@@ -217,7 +218,7 @@ class _SubjectCard extends StatelessWidget {
         ),
         title: Text(
           subject.name,
-          style: const TextStyle(color: UColors.textPrimary, fontWeight: FontWeight.w600),
+          style: context.tt.titleMedium,
         ),
         subtitle: Text(
           "${subject.resourceCount ?? 0} resources",
@@ -231,7 +232,7 @@ class _SubjectCard extends StatelessWidget {
                 icon: const Icon(Iconsax.trash, color: UColors.error, size: 20),
                 onPressed: onDelete,
               ),
-            const Icon(Iconsax.arrow_right_3, color: UColors.textSecondary, size: 18),
+            Icon(Iconsax.arrow_right_3, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
           ],
         ),
       ),

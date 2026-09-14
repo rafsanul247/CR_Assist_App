@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/common/logout_dialog.dart';
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:flutter/material.dart';
@@ -16,17 +17,17 @@ class ProfileScreen extends StatelessWidget {
     final user = authController.user.value;
 
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
+          icon: Icon(Iconsax.arrow_left_2, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => AppRouter.pop(),
         ),
-        title: const Text(
+        title: Text(
           "My Profile",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: context.tt.titleLarge,
         ),
         centerTitle: true,
       ),
@@ -53,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         child: CircleAvatar(
                           radius: 50.r,
-                          backgroundColor: UColors.containerDark,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
                           child: Icon(Iconsax.user, size: 40.r, color: UColors.primary),
                         ),
                       ),
@@ -71,7 +72,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     user?.username ?? "No Name",
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 22.spMin,
                       fontWeight: FontWeight.bold,
                     ),
@@ -79,7 +80,7 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     user?.email ?? "No Email",
                     style: TextStyle(
-                      color: UColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 14.spMin,
                     ),
                   ),
@@ -107,18 +108,21 @@ class ProfileScreen extends StatelessWidget {
 
             // ------------------ Details Cards ------------------
             _buildProfileItem(
+              context: context,
               icon: Iconsax.teacher,
               label: "University",
               value: user?.universityName ?? "Not Set",
               accentColor: Colors.blue,
             ),
             _buildProfileItem(
+              context: context,
               icon: Iconsax.hierarchy,
               label: "Department",
               value: user?.deptName ?? "Not Set",
               accentColor: Colors.purple,
             ),
             _buildProfileItem(
+              context: context,
               icon: Iconsax.profile_2user,
               label: "Batch Info",
               value: user?.batchName ?? "Not Set",
@@ -152,6 +156,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Widget _buildProfileItem({
+    required BuildContext context,
     required IconData icon,
     required String label,
     required String value,
@@ -161,9 +166,9 @@ class ProfileScreen extends StatelessWidget {
       margin: EdgeInsets.only(bottom: 16.h),
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: UColors.containerDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: UColors.borderDark.withValues(alpha: 0.5)),
+        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.5)),
       ),
       child: Row(
         children: [
@@ -182,14 +187,14 @@ class ProfileScreen extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: UColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12.spMin,
                 ),
               ),
               Text(
                 value,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14.spMin,
                   fontWeight: FontWeight.w600,
                 ),

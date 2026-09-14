@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
@@ -30,17 +31,17 @@ class ResourceListView extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: UColors.textPrimary),
+          icon: Icon(Iconsax.arrow_left_2, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => AppRouter.pop(),
         ),
         title: Text(
           subjectName,
-          style: const TextStyle(color: UColors.textPrimary, fontWeight: FontWeight.bold),
+          style: context.tt.titleLarge,
         ),
         centerTitle: true,
       ),
@@ -56,12 +57,12 @@ class ResourceListView extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: () => controller.fetchResources(subjectId),
           color: UColors.primary,
-          backgroundColor: UColors.containerDark,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           child: controller.resources.isEmpty
               ? ListView(
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-                    const Center(child: Text("No resources found", style: TextStyle(color: UColors.textSecondary))),
+                    Center(child: Text("No resources found", style: context.tt.bodyMedium)),
                   ],
                 )
               : ListView.builder(
@@ -94,8 +95,8 @@ class ResourceListView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: UColors.containerDark,
-        title: const Text("Delete Resource", style: TextStyle(color: UColors.textPrimary)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text("Delete Resource", style: context.tt.titleLarge),
         content: const Text("Are you sure?"),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
@@ -122,18 +123,18 @@ class ResourceListView extends StatelessWidget {
   void _showUploadOptions(BuildContext context, SemestersController controller) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: UColors.containerDark,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (context) => Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Select Upload Type", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            Text("Select Upload Type", style: context.tt.titleLarge),
             const SizedBox(height: 20),
             ListTile(
               leading: const Icon(Iconsax.document_1, color: UColors.error),
-              title: const Text("Upload PDF", style: TextStyle(color: Colors.white)),
+              title: Text("Upload PDF", style: context.tt.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 _showTitleDialog(context, controller, 'PDF');
@@ -141,7 +142,7 @@ class ResourceListView extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Iconsax.image, color: UColors.primary),
-              title: const Text("Upload Notes (Multiple Images)", style: TextStyle(color: Colors.white)),
+              title: Text("Upload Notes (Multiple Images)", style: context.tt.bodyLarge),
               onTap: () {
                 Navigator.pop(context);
                 _showTitleDialog(context, controller, 'NOTE');
@@ -158,12 +159,12 @@ class ResourceListView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: UColors.containerDark,
-        title: Text("Enter Title", style: const TextStyle(color: Colors.white)),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        title: Text("Enter Title", style: context.tt.titleLarge),
         content: TextField(
           controller: titleController,
-          style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(hintText: "e.g. Lecture 01", hintStyle: TextStyle(color: UColors.textSecondary)),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          decoration: InputDecoration(hintText: "e.g. Lecture 01", hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
@@ -238,7 +239,7 @@ class _ResourceCard extends StatelessWidget {
     }
 
     return Card(
-      color: UColors.containerDark,
+      color: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
@@ -248,8 +249,8 @@ class _ResourceCard extends StatelessWidget {
           decoration: BoxDecoration(color: iconColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
           child: Icon(iconData, color: iconColor),
         ),
-        title: Text(resource.title, style: const TextStyle(color: UColors.textPrimary, fontWeight: FontWeight.w600)),
-        subtitle: Text(resource.type.toString().toUpperCase(), style: const TextStyle(color: UColors.textSecondary, fontSize: 12)),
+        title: Text(resource.title, style: context.tt.titleMedium),
+        subtitle: Text(resource.type.toString().toUpperCase(), style: context.tt.bodySmall),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

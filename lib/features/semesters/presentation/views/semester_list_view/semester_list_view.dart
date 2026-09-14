@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:cr_assist/features/semesters/presentation/manager/controller/semesters_controller.dart';
@@ -26,12 +27,12 @@ class SemesterListView extends StatelessWidget {
     final AuthController authController = Get.put(sl<AuthController>());
 
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => controller.fetchSemesters(),
           color: UColors.primary,
-          backgroundColor: UColors.containerDark,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
@@ -50,7 +51,7 @@ class SemesterListView extends StatelessWidget {
 
                 if (controller.errorMessage.isNotEmpty && controller.semesters.isEmpty) {
                   return SliverFillRemaining(
-                    child: _buildErrorState(controller.errorMessage.value),
+                    child: _buildErrorState(context, controller.errorMessage.value),
                   );
                 }
 
@@ -105,20 +106,17 @@ class SemesterListView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "CR Assistant",
-                    style: TextStyle(
-                      color: UColors.textPrimary,
+                    style: context.tt.titleLarge?.copyWith(
                       fontSize: 20,
-                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     "Your semesters",
-                    style: TextStyle(
-                      color: UColors.textSecondary,
+                    style: context.tt.bodyMedium?.copyWith(
                       fontSize: 14,
                     ),
                   ),
@@ -129,9 +127,9 @@ class SemesterListView extends StatelessWidget {
 
             Container(
               decoration: BoxDecoration(
-                color: UColors.containerDark,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: UColors.borderDark),
+                border: Border.all(color: Theme.of(context).dividerColor),
               ),
               child: Stack(
                 clipBehavior: Clip.none,
@@ -141,9 +139,9 @@ class SemesterListView extends StatelessWidget {
                       controller.clearUnreadBadge();
                       AppRouter.push('/notice');
                     },
-                    icon: const Icon(
+                    icon: Icon(
                       Iconsax.notification,
-                      color: UColors.textPrimary,
+                      color: Theme.of(context).colorScheme.onSurface,
                       size: 22,
                     ),
                   ),
@@ -186,7 +184,7 @@ class SemesterListView extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(String message) {
+  Widget _buildErrorState(BuildContext context, String message) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -205,7 +203,7 @@ class SemesterListView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: UColors.textSecondary, fontSize: 14),
+              style: context.tt.bodyMedium,
             ),
           ],
         ),
@@ -239,9 +237,9 @@ class _SemesterCard extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: UColors.containerDark,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: UColors.borderDark),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Row(
               children: [
@@ -261,10 +259,8 @@ class _SemesterCard extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: const TextStyle(
-                          color: UColors.textPrimary,
+                        style: context.tt.titleMedium?.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -279,7 +275,7 @@ class _SemesterCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                const Icon(Iconsax.arrow_right_3, color: UColors.textSecondary, size: 18),
+                Icon(Iconsax.arrow_right_3, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 18),
               ],
             ),
           ),
@@ -301,16 +297,16 @@ class _EmptyState extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: UColors.containerDark,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: UColors.borderDark),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
-            child: const Icon(Iconsax.document, color: UColors.textSecondary, size: 36),
+            child: Icon(Iconsax.document, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 36),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "No semesters found",
-            style: TextStyle(color: UColors.textSecondary, fontSize: 15, fontWeight: FontWeight.w500),
+            style: context.tt.bodyLarge,
           ),
         ],
       ),

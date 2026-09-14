@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/common/logout_dialog.dart';
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -12,6 +13,7 @@ class SettingsItemModel {
   final String? route;
   final VoidCallback? onTap;
   final bool isDestructive;
+  final bool isThemeToggle;
 
   const SettingsItemModel({
     required this.title,
@@ -20,6 +22,7 @@ class SettingsItemModel {
     this.route,
     this.onTap,
     this.isDestructive = false,
+    this.isThemeToggle = false,
   });
 }
 
@@ -29,11 +32,11 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           "Settings",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -78,6 +81,12 @@ class SettingsScreen extends StatelessWidget {
                   icon: Iconsax.info_circle,
                   route: '/about',
                 ),
+                const SettingsItemModel(
+                  title: "Dark mode",
+                  subtitle: "Use a darker appearance",
+                  icon: Iconsax.moon,
+                  isThemeToggle: true,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -110,7 +119,9 @@ class _UserProfileCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: UColors.primary.withValues(alpha: 0.3),
+        color: Theme.of(context).brightness == Brightness.dark
+          ? UColors.primary.withValues(alpha: 0.3)
+          : UColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: UColors.borderDark.withValues(alpha: 0.5),
@@ -128,14 +139,14 @@ class _UserProfileCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   "Student Profile",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -186,10 +197,10 @@ class _SettingsGroup extends StatelessWidget {
         Container(
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: UColors.containerDark,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: UColors.borderDark.withValues(alpha: 0.5),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
             ),
           ),
           child: ListView.separated(
@@ -199,7 +210,7 @@ class _SettingsGroup extends StatelessWidget {
             separatorBuilder: (context, index) => Divider(
               height: 1,
               indent: 56,
-              color: UColors.borderDark.withValues(alpha: 0.3),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
             ),
             itemBuilder: (context, index) {
               return _SettingsTile(item: items[index]);
@@ -219,8 +230,8 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final activeColor = item.isDestructive
-        ? UColors.error
-        : Colors.white;
+      ? UColors.error
+      : Theme.of(context).colorScheme.onSurface;
 
 
     final iconColor = item.isDestructive
@@ -234,7 +245,7 @@ class _SettingsTile extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: UColors.dark.withValues(alpha: 0.1),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(item.icon, color: iconColor, size: 22),
@@ -256,11 +267,19 @@ class _SettingsTile extends StatelessWidget {
           ),
         )
             : null,
-        trailing: const Icon(
-          Iconsax.arrow_right_2,
-          size: 18,
-          color: UColors.textSecondary,
-        ),
+        trailing: item.isThemeToggle
+            ? AnimatedBuilder(
+                animation: ThemeController.instance,
+                builder: (context, child) => Switch(
+                  value: ThemeController.instance.isDark,
+                  onChanged: ThemeController.instance.setDarkMode,
+                ),
+              )
+            : const Icon(
+                Iconsax.arrow_right_2,
+                size: 18,
+                color: UColors.textSecondary,
+              ),
         onTap: () {
           if (item.onTap != null) {
             item.onTap!();

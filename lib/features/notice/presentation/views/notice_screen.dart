@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:cr_assist/features/notice/data/models/notice_model.dart';
 import 'package:cr_assist/features/notice/presentation/manager/controller/notice_controller.dart';
@@ -38,21 +39,20 @@ class _NoticeScreenState extends State<NoticeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: UColors.textPrimary),
+          icon: Icon(Iconsax.arrow_left_2, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => context.goNamed('main'),
         ),
-        title: const Text("Notices",
-            style: TextStyle(color: UColors.textPrimary, fontWeight: FontWeight.bold)),
+        title: Text("Notices", style: context.tt.titleLarge),
         centerTitle: true,
         actions: [
           IconButton(
             onPressed: () => noticeController.refreshNotices(),
-            icon: const Icon(Iconsax.refresh, color: Colors.white, size: 20),
+            icon: Icon(Iconsax.refresh, color: Theme.of(context).colorScheme.onSurface, size: 20),
           ),
         ],
       ),
@@ -84,7 +84,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                     return RefreshIndicator(
                       onRefresh: () => noticeController.refreshNotices(),
                       color: UColors.primary,
-                      backgroundColor: UColors.containerDark,
+                      backgroundColor: Theme.of(context).colorScheme.surface,
                       child: ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         children: [
@@ -94,13 +94,11 @@ class _NoticeScreenState extends State<NoticeScreen> {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(Iconsax.notification_bing,
-                                    color: UColors.textSecondary.withValues(alpha: 0.3), size: 48),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.3), size: 48),
                                 SizedBox(height: 16.h),
-                                const Text("No notices yet",
-                                    style: TextStyle(color: UColors.textSecondary)),
+                                Text("No notices yet", style: context.tt.bodyMedium),
                                 SizedBox(height: 8.h),
-                                const Text("Pull down to refresh",
-                                    style: TextStyle(color: UColors.textSecondary, fontSize: 12)),
+                                Text("Pull down to refresh", style: context.tt.bodySmall),
                               ],
                             ),
                           ),
@@ -111,7 +109,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   return RefreshIndicator(
                     onRefresh: () => noticeController.refreshNotices(),
                     color: UColors.primary,
-                    backgroundColor: UColors.containerDark,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     child: ListView.separated(
                       physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: noticeController.notices.length,
@@ -120,7 +118,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                         final notice = noticeController.notices[index];
                         final isNew = index == 0 &&
                             DateTime.now().difference(notice.createdAt).inHours < 24;
-                        return _buildNoticeCard(notice, isNew: isNew);
+                        return _buildNoticeCard(context, notice, isNew: isNew);
                       },
                     ),
                   );
@@ -142,10 +140,10 @@ class _NoticeScreenState extends State<NoticeScreen> {
     );
   }
 
-  Widget _buildNoticeCard(NoticeModel notice, {bool isNew = false}) {
+  Widget _buildNoticeCard(BuildContext context, NoticeModel notice, {bool isNew = false}) {
     return Container(
       decoration: BoxDecoration(
-        color: isNew ? null : UColors.containerDark,
+        color: isNew ? null : Theme.of(context).colorScheme.surface,
         gradient: isNew
             ? LinearGradient(
                 colors: [
@@ -160,7 +158,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
         border: Border.all(
           color: isNew
               ? UColors.primary.withValues(alpha: 0.8)
-              : UColors.borderDark.withValues(alpha: 0.5),
+              : Theme.of(context).dividerColor.withValues(alpha: 0.5),
           width: isNew ? 1.5 : 1,
         ),
         boxShadow: isNew
@@ -211,23 +209,16 @@ class _NoticeScreenState extends State<NoticeScreen> {
                             ),
                           ],
                           Expanded(
-                            child: Text(notice.title,
-                                style: const TextStyle(
-                                    color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                            child: Text(notice.title, style: context.tt.titleMedium),
                           ),
                           Text(
                             DateFormat('dd MMM').format(notice.createdAt.toLocal()),
-                            style: TextStyle(
-                                color: UColors.textSecondary,
-                                fontSize: 12.spMin,
-                                fontWeight: FontWeight.w500),
+                            style: context.tt.bodySmall?.copyWith(fontSize: 12.spMin),
                           ),
                         ],
                       ),
                       SizedBox(height: 8.h),
-                      Text(notice.description,
-                          style: const TextStyle(
-                              color: UColors.textSecondary, fontSize: 13, height: 1.4)),
+                        Text(notice.description, style: context.tt.bodyMedium?.copyWith(height: 1.4)),
                     ],
                   ),
                 ),
@@ -243,7 +234,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: UColors.containerDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: UColors.primary.withValues(alpha: 0.2)),
       ),
@@ -254,8 +245,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
             children: [
               const Icon(Iconsax.personalcard, color: UColors.primary, size: 20),
               SizedBox(width: 8.w),
-              const Text("Class Code",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                Text("Class Code", style: context.tt.titleMedium),
             ],
           ),
           SizedBox(height: 20.h),
@@ -265,7 +255,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 12.h),
                       decoration:
-                          BoxDecoration(color: UColors.dark, borderRadius: BorderRadius.circular(12)),
+                          BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor, borderRadius: BorderRadius.circular(12)),
                       child: Text(controller.classCode.value,
                           textAlign: TextAlign.center,
                           style: const TextStyle(

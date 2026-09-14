@@ -10,6 +10,7 @@ class Constants {
   static const String keyUserDeptName = 'user_dept_name';
   static const String keyUserBatchName = 'user_batch_name';
   static const String keyUserUniversityName = 'user_university_name';
+  static const String keyDarkMode = 'dark_mode';
 
   // App Strings
   static const String appName = 'CR Assistant';

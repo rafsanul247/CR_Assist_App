@@ -18,6 +18,11 @@ class AppTheme {
     fontFamily: GoogleFonts.inter().fontFamily,
     brightness: Brightness.light,
     primaryColor: UColors.primary,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: UColors.primary,
+      brightness: Brightness.light,
+      surface: UColors.white,
+    ),
     disabledColor: UColors.grey,
     textTheme: UTextTheme.lightTextTheme(context),
     chipTheme: UChipTheme.lightChipTheme,
@@ -28,6 +33,7 @@ class AppTheme {
     elevatedButtonTheme: UElevatedButtonTheme.lightElevatedButtonTheme,
     outlinedButtonTheme: UOutlinedButtonTheme.lightOutlinedButtonTheme,
     inputDecorationTheme: UTextFormFieldTheme.lightInputDecorationTheme,
+    dialogTheme: const DialogThemeData(backgroundColor: UColors.white),
   );
 
   static ThemeData darkTheme(BuildContext context) => ThemeData(
@@ -35,6 +41,11 @@ class AppTheme {
     fontFamily: GoogleFonts.inter().fontFamily,
     brightness: Brightness.dark,
     primaryColor: UColors.primary,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: UColors.primary,
+      brightness: Brightness.dark,
+      surface: UColors.containerDark,
+    ),
     disabledColor: UColors.grey,
     textTheme: UTextTheme.darkTextTheme(context),
     chipTheme: UChipTheme.darkChipTheme,
@@ -45,6 +56,7 @@ class AppTheme {
     elevatedButtonTheme: UElevatedButtonTheme.darkElevatedButtonTheme,
     outlinedButtonTheme: UOutlinedButtonTheme.darkOutlinedButtonTheme,
     inputDecorationTheme: UTextFormFieldTheme.darkInputDecorationTheme,
+    dialogTheme: const DialogThemeData(backgroundColor: UColors.containerDark),
   );
 
   static ThemeMode get systemThemeMode => ThemeMode.system;

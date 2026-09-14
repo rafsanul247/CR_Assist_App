@@ -1,4 +1,5 @@
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -18,15 +19,15 @@ class AboutCrAssistant extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: UColors.dark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
+          icon: Icon(Iconsax.arrow_left_2, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => AppRouter.pop(),
         ),
-        title: const Text(
+        title: Text(
           'About Developer',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          style: context.tt.titleLarge,
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -61,7 +62,7 @@ class AboutCrAssistant extends StatelessWidget {
                     ),
                     child: CircleAvatar(
                       radius: 52.r,
-                      backgroundColor: UColors.dark,
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                       child: CircleAvatar(
                         radius: 48.r,
                         backgroundImage: const AssetImage("assets/images/rafsan_profile.jpg"),
@@ -76,7 +77,7 @@ class AboutCrAssistant extends StatelessWidget {
             Text(
               'Rafsanul Rifat',
               style: TextStyle(
-                color: UColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 24.spMin,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 0.5,
@@ -90,10 +91,10 @@ class AboutCrAssistant extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: UColors.primary.withValues(alpha: 0.2)),
               ),
-              child: const Text(
+              child: Text(
                 'Full-Stack Developer',
                 style: TextStyle(
-                  color: UColors.grey,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
@@ -165,7 +166,7 @@ class AboutCrAssistant extends StatelessWidget {
             Text(
               'CR Assistant • v1.0.0',
               style: TextStyle(
-                color: UColors.textSecondary.withValues(alpha: 0.5),
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 fontSize: 12,
                 letterSpacing: 1,
               ),
@@ -193,7 +194,7 @@ class _SocialBtn extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
-          color: UColors.containerDark,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: UColors.borderDark),
         ),
@@ -215,7 +216,7 @@ class _ModernInfoCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        color: UColors.containerDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: UColors.borderDark.withValues(alpha: 0.5)),
       ),
@@ -233,8 +234,8 @@ class _ModernInfoCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(color: UColors.textSecondary, fontSize: 12.spMin)),
-              Text(value, style: TextStyle(color: UColors.textPrimary, fontSize: 14.spMin, fontWeight: FontWeight.bold)),
+              Text(label, style: context.tt.bodySmall?.copyWith(fontSize: 12.spMin)),
+              Text(value, style: context.tt.titleMedium?.copyWith(fontSize: 14.spMin)),
             ],
           ),
         ],
@@ -256,7 +257,7 @@ class _BioSection extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
-        color: UColors.containerDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: UColors.borderDark),
       ),
@@ -276,7 +277,7 @@ class _BioSection extends StatelessWidget {
               SizedBox(width: 10.w),
               Text(
                 title,
-                style: TextStyle(color: Colors.white, fontSize: 16.spMin, fontWeight: FontWeight.bold),
+                style: context.tt.titleMedium?.copyWith(fontSize: 16.spMin),
               ),
             ],
           ),
@@ -284,7 +285,7 @@ class _BioSection extends StatelessWidget {
           Text(
             content,
             style: TextStyle(
-              color: UColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13.spMin,
               height: 1.5,
             ),
