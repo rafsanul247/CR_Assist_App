@@ -5,10 +5,13 @@ import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:cr_assist/features/semesters/presentation/manager/controller/semesters_controller.dart';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ResourceListView extends StatelessWidget {
@@ -243,6 +246,7 @@ class _ResourceCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: ListTile(
+        onTap: () => _launchResource(context),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -257,14 +261,92 @@ class _ResourceCard extends StatelessWidget {
             if (isCR) IconButton(icon: const Icon(Iconsax.trash, color: UColors.error, size: 20), onPressed: onDelete),
             IconButton(
               icon: const Icon(Iconsax.receive_square, color: UColors.primary),
-              onPressed: () async {
-                final Uri url = Uri.parse(resource.url);
-                if (await canLaunchUrl(url)) await launchUrl(url, mode: LaunchMode.externalApplication);
-              },
+              tooltip: 'Download resource',
+              onPressed: () => _downloadResource(context),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _downloadResource(BuildContext context) async {
+    final url = resource.url.toString().trim();
+    if (url.isEmpty) {
+      AppFeedback.showError(context, message: 'This resource has no download link.');
+      return;
+    }
+
+    AppFeedback.showInfo(context, message: 'Downloading ${resource.title}...', title: 'Please wait');
+
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = _fileName(resource.title.toString(), resource.type.toString());
+      final filePath = '${directory.path}/$fileName';
+
+      await Dio().download(url, filePath);
+      if (!context.mounted) return;
+
+      final result = await OpenFilex.open(filePath);
+      if (!context.mounted) return;
+      if (result.type != ResultType.done) {
+        AppFeedback.showError(context, message: 'The file was downloaded but could not be opened.');
+        return;
+      }
+      AppFeedback.showSuccess(context, message: 'Saved and opened $fileName');
+    } on DioException catch (error) {
+      if (context.mounted) {
+        AppFeedback.showError(
+          context,
+          message: error.message ?? 'Unable to download this resource.',
+          title: 'Download failed',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        AppFeedback.showError(context, message: 'Unable to download this resource.', title: 'Download failed');
+      }
+    }
+  }
+
+  Future<void> _launchResource(BuildContext context) async {
+    final url = resource.url.toString().trim();
+    if (url.isEmpty) {
+      AppFeedback.showError(context, message: 'This resource has no file link.');
+      return;
+    }
+
+    final uri = Uri.tryParse(url);
+    if (uri == null || !(uri.scheme == 'http' || uri.scheme == 'https')) {
+      if (context.mounted) {
+        AppFeedback.showError(context, message: 'Unable to open this resource.', title: 'Open failed');
+      }
+      return;
+    }
+
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      AppFeedback.showError(
+        context,
+        message: 'No browser or compatible app is available to open this link.',
+        title: 'Open failed',
+      );
+    }
+  }
+
+  String _fileName(String title, String type) {
+    final cleanTitle = title.replaceAll(RegExp(r'[^a-zA-Z0-9._-]+'), '_');
+    final normalizedType = type.toLowerCase();
+    final uri = Uri.tryParse(resource.url.toString());
+    final urlExtension = uri?.pathSegments.isNotEmpty == true
+        ? uri!.pathSegments.last.split('.').last.toLowerCase()
+        : '';
+    final supportedImageExtensions = {'jpg', 'jpeg', 'png', 'webp', 'gif'};
+    final extension = normalizedType.contains('pdf')
+        ? 'pdf'
+        : supportedImageExtensions.contains(urlExtension)
+            ? urlExtension
+            : 'jpg';
+    return '$cleanTitle.$extension';
   }
 }
