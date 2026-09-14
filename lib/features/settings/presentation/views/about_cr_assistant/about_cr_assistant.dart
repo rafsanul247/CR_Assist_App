@@ -110,9 +110,9 @@ class AboutCrAssistant extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _SocialBtn(icon: Iconsax.global, color: Colors.cyan, onTap: () => _launchUrl('https://rafsanulrifat.vercel.app/')),
-                  _SocialBtn(icon: Iconsax.code, color: Colors.white, onTap: () => _launchUrl('https://github.com/rafsanul247')),
-                  _SocialBtn(icon: Iconsax.briefcase, color: Colors.blueAccent, onTap: () => _launchUrl('https://www.linkedin.com/in/rafsanulrifatcse47')),
-                  _SocialBtn(icon: Iconsax.facebook, color: const Color(0xFF1877F2), onTap: () => _launchUrl('https://www.facebook.com/rafsanul.rifat.47')),
+                  _SocialBtn(icon: Iconsax.code, color: Colors.cyan, onTap: () => _launchUrl('https://github.com/rafsanul247')),
+                  _SocialBtn(icon: Iconsax.briefcase, color: Colors.cyan, onTap: () => _launchUrl('https://www.linkedin.com/in/rafsanulrifatcse47')),
+                  _SocialBtn(icon: Iconsax.facebook, color: Colors.cyan, onTap: () => _launchUrl('https://www.facebook.com/rafsanul.rifat.47')),
                 ],
               ),
             ),
