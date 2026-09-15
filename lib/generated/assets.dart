@@ -12,11 +12,23 @@ class Assets {
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
+  final AssetGenImage appIconHD1024 = const AssetGenImage(
+    'assets/icons/app_icon_HD_1024.png',
+  );
   final AssetGenImage appIconBlack = const AssetGenImage(
     'assets/icons/app_icon_black.png',
   );
   final AssetGenImage appIconWhite = const AssetGenImage(
     'assets/icons/app_icon_white.png',
+  );
+  final AssetGenImage backgroundDark = const AssetGenImage(
+    'assets/icons/background_dark.png',
+  );
+  final AssetGenImage backgroundLight = const AssetGenImage(
+    'assets/icons/background_light.png',
+  );
+  final AssetGenImage brandingImage600x240 = const AssetGenImage(
+    'assets/icons/branding_image_600x240.png',
   );
 }
 
