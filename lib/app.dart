@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
           builder: (context, child) => MaterialApp.router(
             routerConfig: AppRouter.router,
             debugShowCheckedModeBanner: false,
-            title: 'App',
+            title: 'CR Assist',
             theme: AppTheme.lightTheme(context),
             darkTheme: AppTheme.darkTheme(context),
             themeMode: ThemeController.instance.mode,
