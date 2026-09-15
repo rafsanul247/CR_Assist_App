@@ -9,7 +9,6 @@ import 'package:cr_assist/features/semesters/presentation/views/subject_list_vie
 import 'package:cr_assist/features/semesters/presentation/views/resource_list_view/resource_list_view.dart';
 import 'package:cr_assist/features/settings/presentation/views/about_cr_assistant/about_cr_assistant.dart';
 import 'package:cr_assist/features/settings/presentation/views/profile/profile.dart';
-import 'package:cr_assist/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,17 +18,16 @@ class AppRouter {
   static GoRouter get router => _router;
 
   static final GoRouter _router = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: StorageService.containsKey(Constants.keyAuthToken)
+        ? '/main'
+        : '/login',
     debugLogDiagnostics: false,
 
     redirect: (context, state) {
       final bool loggedIn = StorageService.containsKey(Constants.keyAuthToken);
-      final bool isSplash = state.matchedLocation == '/splash';
       final bool isAuth = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/class-code';
-
-      if (isSplash) return null; // Let splash finish
 
       if (!loggedIn && !isAuth) return '/login';
       if (loggedIn && isAuth) return '/main';
@@ -38,11 +36,6 @@ class AppRouter {
     },
 
     routes: [
-      GoRoute(
-        path: '/splash',
-        name: 'splash',
-        pageBuilder: (context, state) => _page(state, const SplashScreen()),
-      ),
       GoRoute(
         path: '/login',
         name: 'login',

@@ -41,7 +41,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Iconsax.arrow_left_2, color: Colors.white),
+          icon: const Icon(Iconsax.arrow_left_2),
           onPressed: () => AppRouter.pop(),
         ),
       ),

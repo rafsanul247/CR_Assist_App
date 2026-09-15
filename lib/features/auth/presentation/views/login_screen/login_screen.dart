@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     "Welcome to ${Constants.appName}",
                     style: TextStyle(
                       color: context.isDark ? UColors.textPrimary : UColors.textDark,
-                      fontSize: 28.spMin,
+                      fontSize: 24.spMin,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
