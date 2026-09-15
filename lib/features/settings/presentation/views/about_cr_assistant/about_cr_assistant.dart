@@ -146,15 +146,15 @@ class AboutCrAssistant extends StatelessWidget {
                   
                   _BioSection(
                     title: 'About the Developer',
-                    content: 'I build full-stack web and mobile applications with a focus on seamless UX and robust logic. Currently pursuing CS while diving deeper into cybersecurity to build safer digital products.',
+                    content: 'I am a passionate Full-Stack Developer dedicated to creating efficient, user-centric digital experiences. With a strong foundation in Web and Mobile technologies, I focus on writing clean code and solving complex problems. Currently, I am exploring the depths of Cybersecurity to build more secure digital ecosystems.',
                     accentColor: UColors.primary,
                   ),
                   
                   SizedBox(height: 16.h),
                   
                   _BioSection(
-                    title: 'About CR Assistant',
-                    content: 'CR Assistant is an all-in-one platform built to streamline academic resource management. CRs can seamlessly push notices, notes, and PDFs while students get instantaneous support via an AI assistant.',
+                    title: 'About CR Assist',
+                    content: 'CR Assist is a comprehensive productivity tool designed to bridge the communication gap in academic environments. It centralizes notices, class resources, and academic schedules, ensuring that every student stays informed and organized throughout their journey.',
                     accentColor: UColors.accent,
                   ),
                 ],
@@ -164,7 +164,7 @@ class AboutCrAssistant extends StatelessWidget {
             SizedBox(height: 40.h),
             
             Text(
-              'CR Assistant • v1.0.0',
+              'CR Assist • v1.0.0',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
                 fontSize: 12,
