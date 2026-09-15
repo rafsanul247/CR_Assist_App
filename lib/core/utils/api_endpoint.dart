@@ -1,4 +1,4 @@
-  /// API endpoints configuration
+/// API endpoints configuration
 /// Centralized location for all API endpoints
 class ApiEndpoint {
   // Private constructor to prevent instantiation
@@ -14,9 +14,11 @@ class ApiEndpoint {
   // Full base URL with version
   static String get baseUrlWithVersion => '$baseUrl$apiVersion';
 
-// Auth
+  // Auth
   static const String register = '/auth/register';
   static const String login = '/auth/login';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String resetPassword = '/auth/reset-password';
   static const String myClassCode = '/auth/my-class-code';
   static const String fcmToken = '/auth/fcm-token';
 
@@ -27,7 +29,8 @@ class ApiEndpoint {
   static String deleteSubject(int subjectId) => '/subjects/$subjectId';
 
   static String resources(int subjectId) => '/subjects/$subjectId/resources';
-  static String uploadResource(int subjectId) => '/subjects/$subjectId/resources';
+  static String uploadResource(int subjectId) =>
+      '/subjects/$subjectId/resources';
   static String deleteResource(int resourceId) => '/resources/$resourceId';
 
   // Notice
@@ -38,4 +41,3 @@ class ApiEndpoint {
     return '$baseUrl$endpoint';
   }
 }
-  

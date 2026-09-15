@@ -2,8 +2,10 @@ import 'package:cr_assist/core/common/r_bottom_navbar.dart';
 import 'package:cr_assist/core/storage/storage_service.dart';
 import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/presentation/views/class_code/class_code.dart';
+import 'package:cr_assist/features/auth/presentation/views/forgot_password/forgot_password_screen.dart';
 import 'package:cr_assist/features/auth/presentation/views/login_screen/login_screen.dart';
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/registration_screen.dart';
+import 'package:cr_assist/features/auth/presentation/views/reset_password/reset_password_screen.dart';
 import 'package:cr_assist/features/notice/presentation/views/notice_screen.dart';
 import 'package:cr_assist/features/semesters/presentation/views/subject_list_view/subject_list_view.dart';
 import 'package:cr_assist/features/semesters/presentation/views/resource_list_view/resource_list_view.dart';
@@ -25,9 +27,12 @@ class AppRouter {
 
     redirect: (context, state) {
       final bool loggedIn = StorageService.containsKey(Constants.keyAuthToken);
-      final bool isAuth = state.matchedLocation == '/login' ||
+      final bool isAuth =
+          state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
-          state.matchedLocation == '/class-code';
+          state.matchedLocation == '/class-code' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/reset-password';
 
       if (!loggedIn && !isAuth) return '/login';
       if (loggedIn && isAuth) return '/main';
@@ -39,12 +44,35 @@ class AppRouter {
       GoRoute(
         path: '/login',
         name: 'login',
-        pageBuilder: (context, state) => _page(state, const LoginScreen()),
+        pageBuilder: (context, state) => _page(
+          state,
+          LoginScreen(
+            showResetSuccess: state.uri.queryParameters['reset'] == 'success',
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/forgot-password',
+        name: 'forgot-password',
+        pageBuilder: (context, state) =>
+            _page(state, const ForgotPasswordScreen()),
+      ),
+      GoRoute(
+        path: '/reset-password',
+        name: 'reset-password',
+        pageBuilder: (context, state) {
+          final email = state.extra as String?;
+          if (email == null || email.isEmpty) {
+            return _page(state, const ForgotPasswordScreen());
+          }
+          return _page(state, ResetPasswordScreen(email: email));
+        },
       ),
       GoRoute(
         path: '/register',
         name: 'register',
-        pageBuilder: (context, state) => _page(state, const RegistrationScreen()),
+        pageBuilder: (context, state) =>
+            _page(state, const RegistrationScreen()),
       ),
       GoRoute(
         path: '/class-code',
@@ -71,10 +99,13 @@ class AppRouter {
         name: 'subjects',
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return _page(state, SubjectListView(
-            semesterId: extra['semesterId'] as int? ?? 0,
-            semesterName: extra['semesterName'] as String? ?? 'Subjects',
-          ));
+          return _page(
+            state,
+            SubjectListView(
+              semesterId: extra['semesterId'] as int? ?? 0,
+              semesterName: extra['semesterName'] as String? ?? 'Subjects',
+            ),
+          );
         },
       ),
       GoRoute(
@@ -82,10 +113,13 @@ class AppRouter {
         name: 'resources',
         pageBuilder: (context, state) {
           final extra = state.extra as Map<String, dynamic>? ?? {};
-          return _page(state, ResourceListView(
-            subjectId: extra['subjectId'] as int? ?? 0,
-            subjectName: extra['subjectName'] as String? ?? 'Resources',
-          ));
+          return _page(
+            state,
+            ResourceListView(
+              subjectId: extra['subjectId'] as int? ?? 0,
+              subjectName: extra['subjectName'] as String? ?? 'Resources',
+            ),
+          );
         },
       ),
       GoRoute(
@@ -94,11 +128,8 @@ class AppRouter {
         pageBuilder: (context, state) => _page(state, const AboutCrAssistant()),
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Error: ${state.error}'),
-      ),
-    ),
+    errorBuilder: (context, state) =>
+        Scaffold(body: Center(child: Text('Error: ${state.error}'))),
   );
 
   static CustomTransitionPage<void> _page(GoRouterState state, Widget child) {
@@ -108,11 +139,17 @@ class AppRouter {
       transitionDuration: const Duration(milliseconds: 360),
       reverseTransitionDuration: const Duration(milliseconds: 280),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
         return FadeTransition(
           opacity: curved,
           child: SlideTransition(
-            position: Tween<Offset>(begin: const Offset(0.04, 0), end: Offset.zero).animate(curved),
+            position: Tween<Offset>(
+              begin: const Offset(0.04, 0),
+              end: Offset.zero,
+            ).animate(curved),
             child: child,
           ),
         );
@@ -124,10 +161,7 @@ class AppRouter {
     _router.go(path);
   }
 
-  static Future<T?> push<T extends Object?>(
-      String path, {
-        Object? extra,
-      }) {
+  static Future<T?> push<T extends Object?>(String path, {Object? extra}) {
     return _router.push<T>(path, extra: extra);
   }
 

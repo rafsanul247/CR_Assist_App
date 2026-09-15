@@ -10,7 +10,9 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final bool showResetSuccess;
+
+  const LoginScreen({super.key, this.showResetSuccess = false});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -24,6 +26,16 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     _controller = Get.put(LoginController());
+    if (widget.showResetSuccess) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          AppFeedback.showSuccess(
+            context,
+            message: 'Password reset successfully. Please login.',
+          );
+        }
+      });
+    }
   }
 
   @override
@@ -55,11 +67,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: 24.h),
-                  
+
                   Text(
                     "Welcome to ${Constants.appName}",
                     style: TextStyle(
-                      color: context.isDark ? UColors.textPrimary : UColors.textDark,
+                      color: context.isDark
+                          ? UColors.textPrimary
+                          : UColors.textDark,
                       fontSize: 24.spMin,
                       fontWeight: FontWeight.bold,
                     ),
@@ -67,7 +81,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     "Login to manage your class easily",
                     style: TextStyle(
-                      color: context.isDark ? UColors.textSecondary : UColors.darkGrey,
+                      color: context.isDark
+                          ? UColors.textSecondary
+                          : UColors.darkGrey,
                       fontSize: 14.spMin,
                     ),
                   ),
@@ -81,61 +97,97 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 16.h),
 
-                  Obx(() => _buildTextField(
-                    controller: _controller.passwordController,
-                    hint: "Password",
-                    icon: Iconsax.lock,
-                    isPassword: true,
-                    obscureText: _controller.isObscure.value,
-                    onSuffixTap: _controller.passwordSwitchToggle,
-                    validator: _controller.validatePassword,
-                  )),
-                  
+                  Obx(
+                    () => _buildTextField(
+                      controller: _controller.passwordController,
+                      hint: "Password",
+                      icon: Iconsax.lock,
+                      isPassword: true,
+                      obscureText: _controller.isObscure.value,
+                      onSuffixTap: _controller.passwordSwitchToggle,
+                      validator: _controller.validatePassword,
+                    ),
+                  ),
+
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
-                      child: const Text("Forgot Password?", style: TextStyle(color: UColors.primary)),
+                      onPressed: () => AppRouter.push('/forgot-password'),
+                      child: const Text(
+                        "Forgot Password?",
+                        style: TextStyle(color: UColors.primary),
+                      ),
                     ),
                   ),
                   SizedBox(height: 24.h),
 
-                  Obx(() => SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      onPressed: _controller.isLoading.value ? null : () async {
-                        if (_formKey.currentState!.validate()) {
-                          final success = await _controller.login();
-                          if (success) {
-                            AppRouter.go('/main');
-                          } else if (context.mounted && _controller.errorMessage.value.isNotEmpty) {
-                            AppFeedback.showError(context, message: _controller.errorMessage.value);
-                          }
-                        }
-                      },
+                  Obx(
+                    () => SizedBox(
+                      width: double.infinity,
+                      height: 56.h,
+                      child: ElevatedButton(
+                        onPressed: _controller.isLoading.value
+                            ? null
+                            : () async {
+                                if (_formKey.currentState!.validate()) {
+                                  final success = await _controller.login();
+                                  if (success) {
+                                    AppRouter.go('/main');
+                                  } else if (context.mounted &&
+                                      _controller
+                                          .errorMessage
+                                          .value
+                                          .isNotEmpty) {
+                                    AppFeedback.showError(
+                                      context,
+                                      message: _controller.errorMessage.value,
+                                    );
+                                  }
+                                }
+                              },
 
-                      child: _controller.isLoading.value 
-                        ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.blue,
-                        ),
-                      )
-                        : const Text("Login", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: _controller.isLoading.value
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.blue,
+                                ),
+                              )
+                            : const Text(
+                                "Login",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
                     ),
-                  )),
-                  
+                  ),
+
                   SizedBox(height: 24.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text("Don't have an account?", style: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey)),
+                      Text(
+                        "Don't have an account?",
+                        style: TextStyle(
+                          color: context.isDark
+                              ? UColors.textSecondary
+                              : UColors.darkGrey,
+                        ),
+                      ),
                       TextButton(
                         onPressed: () => AppRouter.push('/register'),
-                        child: const Text("Register", style: TextStyle(fontSize: 14, color: UColors.primary, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Register",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: UColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -164,14 +216,20 @@ class _LoginScreenState extends State<LoginScreen> {
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: context.isDark ? UColors.textSecondary : UColors.darkGrey),
+        hintStyle: TextStyle(
+          color: context.isDark ? UColors.textSecondary : UColors.darkGrey,
+        ),
         prefixIcon: Icon(icon, color: UColors.primary, size: 20),
-        suffixIcon: isPassword 
-          ? IconButton(
-              icon: Icon(obscureText ? Iconsax.eye_slash : Iconsax.eye, color: UColors.textSecondary, size: 20),
-              onPressed: onSuffixTap,
-            )
-          : null,
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Iconsax.eye_slash : Iconsax.eye,
+                  color: UColors.textSecondary,
+                  size: 20,
+                ),
+                onPressed: onSuffixTap,
+              )
+            : null,
         filled: true,
         fillColor: context.isDark ? UColors.containerDark : UColors.white,
         border: OutlineInputBorder(

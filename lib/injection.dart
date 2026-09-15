@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+
 import 'core/network/dio_client.dart';
 import 'core/network/network_info.dart';
 
@@ -28,17 +29,18 @@ import 'features/settings/domain/repositories/settings_repository.dart';
 import 'features/settings/domain/usecases/settings_usecase.dart';
 import 'features/settings/presentation/manager/controller/settings_controller.dart';
 import 'core/event_bus/notice_bus.dart';
+
 import 'package:get/get.dart';
 
 import 'core/services/fcm_service.dart';
+import 'core/services/auth_service.dart';
 
 final sl = GetIt.instance;
 
 Future<void> init() async {
   Get.put(NoticeBus());
-  sl.registerLazySingleton<FcmService>(
-    () => FcmService(dioClient: sl()),
-  );
+  sl.registerLazySingleton<FcmService>(() => FcmService(dioClient: sl()));
+  sl.registerLazySingleton<AuthService>(() => AuthService(dioClient: sl()));
   _setUpCore();
   await _setUpAuth();
   await _setUpNotice();
@@ -52,7 +54,7 @@ Future<void> initDependencies() async => init();
 void _setUpCore() {
   sl.registerLazySingleton<DioClient>(() => DioClient());
   sl.registerLazySingleton<Dio>(() => sl<DioClient>().dio);
-  
+
   // Connectivity & Network Info
   sl.registerLazySingleton<Connectivity>(() => Connectivity());
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfo(sl()));
@@ -76,10 +78,9 @@ Future<void> _setUpAuth() async {
   // Use Cases
   sl.registerLazySingleton(() => AuthUseCase(repository: sl()));
 
-
-    // Controllers
-    sl.registerFactory(() => AuthController());
-    Get.lazyPut(() => sl<AuthController>());
+  // Controllers
+  sl.registerFactory(() => AuthController());
+  Get.lazyPut(() => sl<AuthController>());
 }
 
 Future<void> _setUpNotice() async {
@@ -96,10 +97,9 @@ Future<void> _setUpNotice() async {
   // Use Cases
   sl.registerLazySingleton(() => NoticeUseCase(repository: sl()));
 
-
-    // Controllers
-    sl.registerFactory(() => NoticeController());
-    Get.lazyPut(() => sl<NoticeController>());
+  // Controllers
+  sl.registerFactory(() => NoticeController());
+  Get.lazyPut(() => sl<NoticeController>());
 }
 
 Future<void> _setUpSemesters() async {
@@ -110,10 +110,7 @@ Future<void> _setUpSemesters() async {
 
   // Repositories
   sl.registerLazySingleton<SemestersRepository>(
-    () => SemestersRepositoryImplement(
-      dataSource: sl(),
-      networkInfo: sl(),
-    ),
+    () => SemestersRepositoryImplement(dataSource: sl(), networkInfo: sl()),
   );
 
   // Use Cases
@@ -138,8 +135,7 @@ Future<void> _setUpSettings() async {
   // Use Cases
   sl.registerLazySingleton(() => SettingsUseCase(repository: sl()));
 
-
-    // Controllers
-    sl.registerFactory(() => SettingsController(sl()));
-    Get.lazyPut(() => sl<SettingsController>());
+  // Controllers
+  sl.registerFactory(() => SettingsController(sl()));
+  Get.lazyPut(() => sl<SettingsController>());
 }
