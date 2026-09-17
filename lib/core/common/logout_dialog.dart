@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:cr_assist/core/constants/colors.dart';
+import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/storage/storage_service.dart';
 import 'package:cr_assist/core/theme/widgets_theme/elevated_button_theme.dart';
 import 'package:cr_assist/core/theme/widgets_theme/outlined_button_theme.dart';
@@ -42,7 +43,7 @@ class LogoutDialog extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: UColors.containerDark.withValues(alpha: 0.85),
+            color: context.isDark? UColors.containerDark : UColors.white,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: Colors.white.withValues(alpha: 0.12),
@@ -82,7 +83,6 @@ class LogoutDialog extends StatelessWidget {
               const Text(
                 "Log Out",
                 style: TextStyle(
-                  color: Colors.white,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.5,
@@ -113,7 +113,6 @@ class LogoutDialog extends StatelessWidget {
                       child: const Text(
                         "Cancel",
                         style: TextStyle(
-                          color: Colors.white,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

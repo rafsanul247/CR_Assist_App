@@ -153,8 +153,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     },
 
                     child: _controller.isLoading.value 
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Sign Up", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.blue,
+                      ),
+                    )
+                      : Text("Sign Up", style: TextStyle(fontSize: 16.spMin, fontWeight: FontWeight.bold)),
                   ),
                 )),
                 SizedBox(height: 24.h),

@@ -58,7 +58,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: AppRouter.pop,
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+            Iconsax.arrow_left_2,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           tooltip: 'Back',
         ),
       ),
@@ -142,18 +145,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   SizedBox(height: 24.h),
                   Obx(
                     () => SizedBox(
-                      height: 54.h,
+                      height: 56.h,
                       child: ElevatedButton(
                         onPressed: _controller.isLoading.value
                             ? null
                             : _resetPassword,
                         child: _controller.isLoading.value
                             ? const SizedBox(
-                                height: 22,
-                                width: 22,
+                                height: 20,
+                                width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  color: Colors.white,
+                                  color: Colors.blue,
                                 ),
                               )
                             : const Text(

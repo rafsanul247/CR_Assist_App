@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/common/app_feedback.dart';
 import 'package:cr_assist/core/extensions/context_extension.dart';
@@ -12,7 +14,6 @@ import 'package:get/get.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ResourceListView extends StatelessWidget {
   final int subjectId;
@@ -251,7 +252,7 @@ class _ResourceCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: ListTile(
-        onTap: () => _launchResource(context),
+        onTap: () => _openResource(context),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           padding: const EdgeInsets.all(10),
@@ -285,20 +286,24 @@ class _ResourceCard extends StatelessWidget {
     AppFeedback.showInfo(context, message: 'Downloading ${resource.title}...', title: 'Please wait');
 
     try {
-      final directory = await getApplicationDocumentsDirectory();
       final fileName = _fileName(resource.title.toString(), resource.type.toString());
-      final filePath = '${directory.path}/$fileName';
+      final temporaryDirectory = await getTemporaryDirectory();
+      final temporaryPath = '${temporaryDirectory.path}/$fileName';
+      await Dio().download(url, temporaryPath);
 
-      await Dio().download(url, filePath);
+      final savedUri = await FilePicker.saveFile(
+        dialogTitle: 'Save resource',
+        fileName: fileName,
+        bytes: await File(temporaryPath).readAsBytes(),
+        type: FileType.custom,
+        allowedExtensions: _allowedExtensions(resource.type.toString()),
+      );
+
+      if (savedUri == null) return;
+
       if (!context.mounted) return;
 
-      final result = await OpenFilex.open(filePath);
-      if (!context.mounted) return;
-      if (result.type != ResultType.done) {
-        AppFeedback.showError(context, message: 'The file was downloaded but could not be opened.');
-        return;
-      }
-      AppFeedback.showSuccess(context, message: 'Saved and opened $fileName');
+      AppFeedback.showSuccess(context, message: 'Downloaded $fileName');
     } on DioException catch (error) {
       if (context.mounted) {
         AppFeedback.showError(
@@ -314,28 +319,38 @@ class _ResourceCard extends StatelessWidget {
     }
   }
 
-  Future<void> _launchResource(BuildContext context) async {
+  Future<void> _openResource(BuildContext context) async {
     final url = resource.url.toString().trim();
     if (url.isEmpty) {
       AppFeedback.showError(context, message: 'This resource has no file link.');
       return;
     }
 
-    final uri = Uri.tryParse(url);
-    if (uri == null || !(uri.scheme == 'http' || uri.scheme == 'https')) {
+    AppFeedback.showInfo(context, message: 'Opening ${resource.title}...', title: 'Please wait');
+
+    try {
+      final fileName = _fileName(resource.title.toString(), resource.type.toString());
+      final temporaryDirectory = await getTemporaryDirectory();
+      final temporaryPath = '${temporaryDirectory.path}/$fileName';
+      await Dio().download(url, temporaryPath);
+
+      final result = await OpenFilex.open(temporaryPath);
+      if (!context.mounted) return;
+      if (result.type != ResultType.done) {
+        AppFeedback.showError(context, message: 'No compatible app is available to open this file.', title: 'Open failed');
+      }
+    } on DioException catch (error) {
+      if (context.mounted) {
+        AppFeedback.showError(
+          context,
+          message: error.message ?? 'Unable to open this resource.',
+          title: 'Open failed',
+        );
+      }
+    } catch (_) {
       if (context.mounted) {
         AppFeedback.showError(context, message: 'Unable to open this resource.', title: 'Open failed');
       }
-      return;
-    }
-
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched && context.mounted) {
-      AppFeedback.showError(
-        context,
-        message: 'No browser or compatible app is available to open this link.',
-        title: 'Open failed',
-      );
     }
   }
 
@@ -353,5 +368,9 @@ class _ResourceCard extends StatelessWidget {
             ? urlExtension
             : 'jpg';
     return '$cleanTitle.$extension';
+  }
+
+  List<String> _allowedExtensions(String type) {
+    return type.toLowerCase().contains('pdf') ? ['pdf'] : ['jpg', 'jpeg', 'png', 'webp', 'gif'];
   }
 }

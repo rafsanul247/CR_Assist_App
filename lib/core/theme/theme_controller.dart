@@ -4,7 +4,7 @@ import 'package:cr_assist/core/utils/constant.dart';
 
 class ThemeController extends ChangeNotifier {
   ThemeController._()
-      : _isDark = StorageService.get<bool>(Constants.keyDarkMode) ?? true;
+      : _isDark = StorageService.get<bool>(Constants.keyDarkMode) ?? false;
 
   static final ThemeController instance = ThemeController._();
 

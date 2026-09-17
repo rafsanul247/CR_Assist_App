@@ -36,6 +36,13 @@ class _NoticeScreenState extends State<NoticeScreen> {
     });
   }
 
+  Future<void> _refreshNoticeScreen() async {
+    await Future.wait([
+      noticeController.refreshNotices(),
+      if (authController.isCR) noticeController.fetchMyClassCode(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,7 +58,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () => noticeController.refreshNotices(),
+            onPressed: _refreshNoticeScreen,
             icon: Icon(Iconsax.refresh, color: Theme.of(context).colorScheme.onSurface, size: 20),
           ),
         ],
@@ -82,7 +89,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                   }
                   if (noticeController.notices.isEmpty) {
                     return RefreshIndicator(
-                      onRefresh: () => noticeController.refreshNotices(),
+                      onRefresh: _refreshNoticeScreen,
                       color: UColors.primary,
                       backgroundColor: Theme.of(context).colorScheme.surface,
                       child: ListView(
@@ -107,7 +114,7 @@ class _NoticeScreenState extends State<NoticeScreen> {
                     );
                   }
                   return RefreshIndicator(
-                    onRefresh: () => noticeController.refreshNotices(),
+                    onRefresh: _refreshNoticeScreen,
                     color: UColors.primary,
                     backgroundColor: Theme.of(context).colorScheme.surface,
                     child: ListView.separated(

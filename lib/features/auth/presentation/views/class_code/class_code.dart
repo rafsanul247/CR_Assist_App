@@ -103,11 +103,6 @@ class ClassCode extends StatelessWidget {
                         }
                         // If failed, controller.errorMessage is already populated and UI will show it
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: UColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
                       child: const Text("Join Batch & Sign Up", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   )

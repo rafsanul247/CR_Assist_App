@@ -1,7 +1,7 @@
 import 'package:cr_assist/core/error/exception_handler.dart';
-import 'package:cr_assist/core/models/password_reset_response.dart';
 import 'package:cr_assist/core/network/dio_client.dart';
 import 'package:cr_assist/core/utils/api_endpoint.dart';
+import 'package:cr_assist/features/auth/presentation/views/reset_password/models/password_reset_response.dart';
 
 class AuthService {
   final DioClient dioClient;

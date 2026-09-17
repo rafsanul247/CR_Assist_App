@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: context.isDark
                           ? UColors.textPrimary
                           : UColors.textDark,
-                      fontSize: 24.spMin,
+                      fontSize: 20.spMin,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -155,10 +155,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.blue,
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 "Login",
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 16.spMin,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

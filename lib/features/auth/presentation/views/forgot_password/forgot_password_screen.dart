@@ -40,7 +40,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: AppRouter.pop,
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+            Iconsax.arrow_left_2,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           tooltip: 'Back',
         ),
       ),
@@ -99,21 +102,21 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       Iconsax.sms,
                     ),
                   ),
-                  SizedBox(height: 22.h),
+                  SizedBox(height: 40.h),
                   Obx(
                     () => SizedBox(
-                      height: 54.h,
+                      height: 56.h,
                       child: ElevatedButton(
                         onPressed: _controller.isLoading.value
                             ? null
                             : _sendOtp,
                         child: _controller.isLoading.value
                             ? const SizedBox(
-                                height: 22,
-                                width: 22,
+                                height: 20,
+                                width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
-                                  color: Colors.white,
+                                  color: Colors.blue,
                                 ),
                               )
                             : const Text(
