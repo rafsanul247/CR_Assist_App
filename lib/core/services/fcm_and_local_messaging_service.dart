@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'dart:async';
+import 'dart:convert';
 
 // Top-level background message handler
 @pragma('vm:entry-point')
@@ -78,7 +79,16 @@ class NotificationService {
     await _localPlugin.initialize(
       settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
       onDidReceiveNotificationResponse: (response) {
-        if (kDebugMode) print('Local notification tapped payload: ${response.payload}');
+        final payload = response.payload;
+        if (payload != null && payload.isNotEmpty) {
+          try {
+            _handleLocalNavigation(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+            return;
+          } catch (e) {
+            if (kDebugMode) debugPrint('Invalid local notification payload: $e');
+          }
+        }
+        AppRouter.go('/notice');
       },
     );
 
@@ -119,7 +129,7 @@ class NotificationService {
               presentSound: true,
             ),
           ),
-          payload: message.data.toString(),
+          payload: jsonEncode(message.data),
         );
       }
     });
@@ -142,6 +152,24 @@ class NotificationService {
         'Notification clicked: ${message.messageId}, data: ${message.data}',
       );
     }
+    _navigateFromData(message.data);
+  }
+
+  void _handleLocalNavigation(Map<String, dynamic> data) {
+    _navigateFromData(data);
+  }
+
+  void _navigateFromData(Map<String, dynamic> data) {
+    final subjectId = int.tryParse('${data['subjectId'] ?? data['subject_id'] ?? ''}');
+    if (subjectId != null && subjectId > 0) {
+      final subjectName = '${data['subjectName'] ?? data['subject_name'] ?? 'Resources'}';
+      AppRouter.go('/resources', extra: {
+        'subjectId': subjectId,
+        'subjectName': subjectName,
+      });
+      return;
+    }
+
     AppRouter.go('/notice');
   }
 

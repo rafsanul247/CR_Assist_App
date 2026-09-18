@@ -30,6 +30,9 @@ class $AssetsIconsGen {
   final AssetGenImage brandingImage600x240 = const AssetGenImage(
     'assets/icons/branding_image_600x240.png',
   );
+  final AssetGenImage logoWithBackground1152 = const AssetGenImage(
+    'assets/icons/logo_with_background_1152.png',
+  );
 }
 
 class $AssetsImagesGen {

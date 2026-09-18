@@ -7,6 +7,7 @@ import 'package:cr_assist/features/auth/presentation/views/login_screen/login_sc
 import 'package:cr_assist/features/auth/presentation/views/registration_screen/registration_screen.dart';
 import 'package:cr_assist/features/auth/presentation/views/reset_password/reset_password_screen.dart';
 import 'package:cr_assist/features/notice/presentation/views/notice_screen.dart';
+import 'package:cr_assist/features/onboarding/presentation/onboarding_page.dart';
 import 'package:cr_assist/features/semesters/presentation/views/subject_list_view/subject_list_view.dart';
 import 'package:cr_assist/features/semesters/presentation/views/resource_list_view/resource_list_view.dart';
 import 'package:cr_assist/features/settings/presentation/views/about_cr_assistant/about_cr_assistant.dart';
@@ -22,7 +23,9 @@ class AppRouter {
   static final GoRouter _router = GoRouter(
     initialLocation: StorageService.containsKey(Constants.keyAuthToken)
         ? '/main'
-        : '/login',
+        : StorageService.containsKey(Constants.keyOnboardingCompleted)
+        ? '/login'
+        : '/onboarding',
     debugLogDiagnostics: false,
 
     redirect: (context, state) {
@@ -33,14 +36,29 @@ class AppRouter {
           state.matchedLocation == '/class-code' ||
           state.matchedLocation == '/forgot-password' ||
           state.matchedLocation == '/reset-password';
+      final bool isOnboarding = state.matchedLocation == '/onboarding';
 
-      if (!loggedIn && !isAuth) return '/login';
+      if (!StorageService.containsKey(Constants.keyOnboardingCompleted) &&
+          !loggedIn &&
+          !isOnboarding) {
+        return '/onboarding';
+      }
+      if (isOnboarding &&
+          StorageService.containsKey(Constants.keyOnboardingCompleted)) {
+        return loggedIn ? '/main' : '/login';
+      }
+      if (!loggedIn && !isAuth && !isOnboarding) return '/login';
       if (loggedIn && isAuth) return '/main';
 
       return null;
     },
 
     routes: [
+      GoRoute(
+        path: '/onboarding',
+        name: 'onboarding',
+        pageBuilder: (context, state) => _page(state, const OnboardingPage()),
+      ),
       GoRoute(
         path: '/login',
         name: 'login',
@@ -157,8 +175,8 @@ class AppRouter {
     );
   }
 
-  static void go(String path) {
-    _router.go(path);
+  static void go(String path, {Object? extra}) {
+    _router.go(path, extra: extra);
   }
 
   static Future<T?> push<T extends Object?>(String path, {Object? extra}) {

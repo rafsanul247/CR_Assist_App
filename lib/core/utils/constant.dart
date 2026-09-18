@@ -2,6 +2,7 @@ class Constants {
   Constants._();
 
   static const String keyAuthToken = 'auth_token';
+  static const String keyOnboardingCompleted = 'onboarding_completed';
   static const String keyUserId = 'user_id';
   static const String keyUserRole = 'user_role';
   static const String keyUserName = 'user_name';
