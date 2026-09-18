@@ -1,8 +1,11 @@
+import 'package:android_intent_plus/android_intent.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -20,7 +23,8 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 class NotificationService {
   final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final FlutterLocalNotificationsPlugin _localPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _localPlugin =
+      FlutterLocalNotificationsPlugin();
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   StreamSubscription<RemoteMessage>? _openedAppSubscription;
   bool _initialized = false;
@@ -35,26 +39,10 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    // 1. Request Permission
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
-      if (kDebugMode) {
-        debugPrint(
-          'FCM notification permission not authorized: '
-          '${settings.authorizationStatus}',
-        );
-      }
-    }
-
-    // 2. Setup Local Notifications & Android Channel
+    // 1. Setup Local Notifications & Android Channel
     await _setupLocalNotifications();
 
-    // 3. Set Background Handler & iOS Options
+    // 2. Set Background Handler & iOS Options
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     await _fcm.setForegroundNotificationPresentationOptions(
       alert: true,
@@ -62,30 +50,94 @@ class NotificationService {
       sound: true,
     );
 
-    // 4. Print FCM Token
+    // 3. Print FCM Token
     String? token = await _fcm.getToken();
     if (kDebugMode) print("FCM Device Token: $token");
 
-    // 5. Setup Listeners
+    // 4. Setup Listeners
     _setupForegroundListener();
     await _setupInteractedMessage();
     _initialized = true;
   }
 
+  Future<AuthorizationStatus> permissionStatus() async {
+    final settings = await _fcm.getNotificationSettings();
+    return settings.authorizationStatus;
+  }
+
+  Future<AuthorizationStatus> requestPermission() async {
+    final settings = await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    return settings.authorizationStatus;
+  }
+
+  Future<bool> requestPermissionOrOpenSettings() async {
+    final status = await requestPermission();
+    if (status == AuthorizationStatus.authorized ||
+        status == AuthorizationStatus.provisional) {
+      return true;
+    }
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      try {
+        await const AndroidIntent(
+          action: 'android.settings.APP_NOTIFICATION_SETTINGS',
+          arguments: <String, dynamic>{
+            'android.provider.extra.APP_PACKAGE': 'com.example.cr_assist',
+          },
+        ).launch();
+        return true;
+      } catch (error) {
+        if (kDebugMode) {
+          debugPrint('Notification settings intent failed: $error');
+        }
+        try {
+          await const AndroidIntent(
+            action: 'android.settings.APPLICATION_DETAILS_SETTINGS',
+            data: 'package:com.example.cr_assist',
+          ).launch();
+          return true;
+        } catch (fallbackError) {
+          if (kDebugMode) {
+            debugPrint('App settings intent failed: $fallbackError');
+          }
+          return false;
+        }
+      }
+    }
+
+    return launchUrl(
+      Uri.parse('app-settings:'),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   Future<void> _setupLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings();
 
     await _localPlugin.initialize(
-      settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
+      settings: const InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      ),
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;
         if (payload != null && payload.isNotEmpty) {
           try {
-            _handleLocalNavigation(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+            _handleLocalNavigation(
+              Map<String, dynamic>.from(jsonDecode(payload) as Map),
+            );
             return;
           } catch (e) {
-            if (kDebugMode) debugPrint('Invalid local notification payload: $e');
+            if (kDebugMode) {
+              debugPrint('Invalid local notification payload: $e');
+            }
           }
         }
         AppRouter.go('/notice');
@@ -93,12 +145,16 @@ class NotificationService {
     );
 
     await _localPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
   }
 
   void _setupForegroundListener() {
-    _foregroundSubscription ??= FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _foregroundSubscription ??= FirebaseMessaging.onMessage.listen((
+      RemoteMessage message,
+    ) {
       RemoteNotification? notification = message.notification;
 
       if (kDebugMode) {
@@ -143,7 +199,9 @@ class NotificationService {
     }
 
     // Background state
-    _openedAppSubscription ??= FirebaseMessaging.onMessageOpenedApp.listen(_handleNavigation);
+    _openedAppSubscription ??= FirebaseMessaging.onMessageOpenedApp.listen(
+      _handleNavigation,
+    );
   }
 
   void _handleNavigation(RemoteMessage message) {
@@ -160,13 +218,16 @@ class NotificationService {
   }
 
   void _navigateFromData(Map<String, dynamic> data) {
-    final subjectId = int.tryParse('${data['subjectId'] ?? data['subject_id'] ?? ''}');
+    final subjectId = int.tryParse(
+      '${data['subjectId'] ?? data['subject_id'] ?? ''}',
+    );
     if (subjectId != null && subjectId > 0) {
-      final subjectName = '${data['subjectName'] ?? data['subject_name'] ?? 'Resources'}';
-      AppRouter.go('/resources', extra: {
-        'subjectId': subjectId,
-        'subjectName': subjectName,
-      });
+      final subjectName =
+          '${data['subjectName'] ?? data['subject_name'] ?? 'Resources'}';
+      AppRouter.go(
+        '/resources',
+        extra: {'subjectId': subjectId, 'subjectName': subjectName},
+      );
       return;
     }
 

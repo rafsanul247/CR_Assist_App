@@ -10,7 +10,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../../core/extensions/context_extension.dart';
 
-
 // ============================================================================
 // TABLET-SPECIFIC LANDSCAPE ORIENTATION ONBOARDING VIEW
 // ============================================================================
@@ -28,12 +27,13 @@ class TabletOnboardingPage extends StatelessWidget {
       body: SafeArea(
         child: Row(
           children: [
-
             // ── LEFT SIDE PANEL: PRODUCT ILLUSTRATIONS (60% VIEWPORT WIDTH) ──
             Expanded(
               flex: 6,
               child: Container(
-                color: context.isDark ? UColors.darkerGrey.withValues(alpha: 0.2) : UColors.lightGrey,
+                color: context.isDark
+                    ? UColors.darkerGrey.withValues(alpha: 0.2)
+                    : UColors.lightGrey,
                 child: PageView(
                   controller: controller.pageController,
                   onPageChanged: controller.updatePageIndicator,
@@ -56,19 +56,17 @@ class TabletOnboardingPage extends StatelessWidget {
                   color: context.isDark ? UColors.dark : UColors.light,
                   border: Border(
                     left: BorderSide(
-                      color: context.isDark ? UColors.darkerGrey : UColors.borderPrimary,
+                      color: context.isDark
+                          ? UColors.darkerGrey
+                          : UColors.borderPrimary,
                       width: 0.5,
                     ),
                   ),
                 ),
-                padding: EdgeInsets.symmetric(
-                  horizontal: 32.w,
-                  vertical: 24.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 32.w, vertical: 24.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
                     // ── SKIP ACTION INTERACTION CONTROLLER ──
                     Align(
                       alignment: Alignment.topRight,
@@ -83,9 +81,13 @@ class TabletOnboardingPage extends StatelessWidget {
                           UTexts.skip,
                           style: context.tt.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: context.isDark ? UColors.light : UColors.black,
+                            color: context.isDark
+                                ? UColors.light
+                                : UColors.black,
                             decoration: TextDecoration.underline,
-                            decorationColor: context.isDark ? UColors.lightGrey : UColors.textDark,
+                            decorationColor: context.isDark
+                                ? UColors.lightGrey
+                                : UColors.textDark,
                           ),
                         ),
                       ),
@@ -124,7 +126,9 @@ class TabletOnboardingPage extends StatelessWidget {
                               titles[i],
                               style: context.tt.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: context.isDark ? UColors.textWhite : UColors.textDark,
+                                color: context.isDark
+                                    ? UColors.textWhite
+                                    : UColors.textDark,
                               ),
                             ),
                             SizedBox(height: USizes.spaceBtwItems.h),
@@ -154,7 +158,9 @@ class TabletOnboardingPage extends StatelessWidget {
                           dotWidth: 7.r,
                           spacing: 6.r,
                           activeDotColor: UColors.primary,
-                          dotColor: context.isDark ? UColors.darkGrey : UColors.grey,
+                          dotColor: context.isDark
+                              ? UColors.darkGrey
+                              : UColors.grey,
                         ),
                       ),
                     ),
@@ -165,9 +171,9 @@ class TabletOnboardingPage extends StatelessWidget {
                       width: double.infinity,
                       height: 54.h,
                       child: UElevatedButton(
-                        onPressed: () => controller.nextPage(),
+                        onPressed: () => controller.nextPage(context),
                         child: Obx(
-                              () => Text(
+                          () => Text(
                             controller.buttonText,
                             style: context.tt.titleMedium?.copyWith(
                               color: UColors.white,

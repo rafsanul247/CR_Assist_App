@@ -1,7 +1,9 @@
 import 'package:cr_assist/core/constants/texts.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
+import 'package:cr_assist/core/services/fcm_and_local_messaging_service.dart';
 import 'package:cr_assist/core/storage/storage_service.dart';
 import 'package:cr_assist/core/utils/constant.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -34,7 +36,50 @@ class OnboardingController extends GetxController {
   }
 
   /// Update current index and jump to the next page
-  void nextPage() {
+  Future<void> nextPage(BuildContext context) async {
+    if (currentIndex.value == 2) {
+      final status = await NotificationService().permissionStatus();
+      if (status != AuthorizationStatus.authorized &&
+          status != AuthorizationStatus.provisional) {
+        if (!context.mounted) return;
+        final shouldContinue = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('Turn on notifications'),
+            content: const Text(
+              'Allow notifications to receive important class and notice updates.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Continue Anyway'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  final permissionEnabled = await NotificationService()
+                      .requestPermissionOrOpenSettings();
+                  if (permissionEnabled && dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop(true);
+                  }
+                },
+                child: const Text('Allow'),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldContinue == true) {
+          _goToNextPage();
+        }
+        return;
+      }
+    }
+
+    _goToNextPage();
+  }
+
+  void _goToNextPage() {
     if (currentIndex.value == 3) {
       currentIndex.value = 0; // Resetting manually before navigating
       _completeOnboarding();

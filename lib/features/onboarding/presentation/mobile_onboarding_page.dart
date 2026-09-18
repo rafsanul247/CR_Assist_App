@@ -10,7 +10,6 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../../core/extensions/context_extension.dart';
 
-
 // ============================================================================
 // MOBILE-SPECIFIC ONBOARDING SCALABLE VIEW
 // ============================================================================
@@ -42,7 +41,9 @@ class MobileOnboardingPage extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: context.isDark ? UColors.light : UColors.black,
                       decoration: TextDecoration.underline,
-                      decorationColor: context.isDark ? UColors.lightGrey : UColors.textDark,
+                      decorationColor: context.isDark
+                          ? UColors.lightGrey
+                          : UColors.textDark,
                     ),
                   ),
                 ),
@@ -98,13 +99,16 @@ class MobileOnboardingPage extends StatelessWidget {
 
               // ── REUSABLE ACTION SYSTEM ──
               UElevatedButton(
-                onPressed: () => controller.nextPage(),
-                child: Obx(() => Text(
-                  controller.buttonText,
-                  style: context.tt.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold, color: UColors.white
+                onPressed: () => controller.nextPage(context),
+                child: Obx(
+                  () => Text(
+                    controller.buttonText,
+                    style: context.tt.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: UColors.white,
+                    ),
                   ),
-                )),
+                ),
               ),
             ],
           ),
@@ -138,12 +142,7 @@ class OnboardingPageView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // ── SCALE-SAFE ILLUSTRATION ASSET ──
-          Image.asset(
-            image,
-            height: 270.h,
-            width: 270.w,
-            fit: BoxFit.contain,
-          ),
+          Image.asset(image, height: 270.h, width: 270.w, fit: BoxFit.contain),
           SizedBox(height: USizes.spaceBtwSections),
 
           // ── ACCESSIBILITY TYPOGRAPHY TITLE TOKEN ──
