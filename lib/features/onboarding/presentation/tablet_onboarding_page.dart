@@ -206,7 +206,7 @@ class _TabletImageItem extends StatelessWidget {
   static const _images = [
     'assets/images/onboarding_one.png',
     'assets/images/onboarding_two.png',
-    'assets/images/onboarding_three.png',
+    'assets/images/onboarding_three.png', 
     'assets/images/onboarding_four.png',
   ];
 

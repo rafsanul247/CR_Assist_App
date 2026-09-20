@@ -57,9 +57,8 @@ class OnboardingController extends GetxController {
               ),
               FilledButton(
                 onPressed: () async {
-                  final permissionEnabled = await NotificationService()
-                      .requestPermissionOrOpenSettings();
-                  if (permissionEnabled && dialogContext.mounted) {
+                  await NotificationService().requestPermission();
+                  if (dialogContext.mounted) {
                     Navigator.of(dialogContext).pop(true);
                   }
                 },
