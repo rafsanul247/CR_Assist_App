@@ -1,13 +1,15 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:android_intent_plus/android_intent.dart';
+import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'dart:async';
-
-// Top-level background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -30,6 +32,8 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _localPlugin =
       FlutterLocalNotificationsPlugin();
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
+  StreamSubscription<RemoteMessage>? _openedAppSubscription;
+  final Set<String> _handledMessageKeys = <String>{};
   bool _initialized = false;
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
@@ -42,24 +46,29 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    // 1. Setup Local Notifications & Android Channel
     await _setupLocalNotifications();
-
-    // 2. Set Background Handler & iOS Options
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
     await _fcm.setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
+      alert: false,
+      badge: false,
+      sound: false,
     );
 
-    // 3. Print FCM Token
-    String? token = await _fcm.getToken();
-    if (kDebugMode) print("FCM Device Token: $token");
+    final token = await _fcm.getToken();
+    if (kDebugMode) print('FCM Device Token: $token');
 
-    // 4. Setup Listeners
     _setupForegroundListener();
+    _openedAppSubscription ??= FirebaseMessaging.onMessageOpenedApp.listen(
+      _handleRemoteMessage,
+    );
     _initialized = true;
+
+    final initialMessage = await _fcm.getInitialMessage();
+    if (initialMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _handleRemoteMessage(initialMessage);
+      });
+    }
   }
 
   Future<AuthorizationStatus> permissionStatus() async {
@@ -130,9 +139,7 @@ class NotificationService {
   }
 
   Future<void> _setupLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings();
 
     await _localPlugin.initialize(
@@ -140,6 +147,15 @@ class NotificationService {
         android: androidSettings,
         iOS: iosSettings,
       ),
+      onDidReceiveNotificationResponse: (response) {
+        final payload = response.payload;
+        if (payload == null || payload.isEmpty) return;
+        try {
+          _handleData(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+        } catch (error) {
+          debugPrint('Invalid local notification payload: $error');
+        }
+      },
     );
 
     await _localPlugin
@@ -150,47 +166,88 @@ class NotificationService {
   }
 
   void _setupForegroundListener() {
-    _foregroundSubscription ??= FirebaseMessaging.onMessage.listen((
-      RemoteMessage message,
-    ) {
-      RemoteNotification? notification = message.notification;
+    _foregroundSubscription ??= FirebaseMessaging.onMessage.listen((message) {
+      final notification = message.notification;
+      final data = Map<String, dynamic>.from(message.data);
 
       if (kDebugMode) {
         debugPrint(
           'Foreground FCM message: ${message.messageId}, '
-          'from: ${message.from}, title: ${notification?.title}, '
-          'body: ${notification?.body}, data: ${message.data}',
+          'title: ${notification?.title}, body: ${notification?.body}, '
+          'data: ${message.data}',
         );
       }
 
-      if (notification != null) {
-        _localPlugin.show(
-          id: notification.hashCode,
-          title: notification.title,
-          body: notification.body,
-          notificationDetails: NotificationDetails(
-            android: AndroidNotificationDetails(
-              _channel.id,
-              _channel.name,
-              channelDescription: _channel.description,
-              importance: Importance.max,
-              priority: Priority.high,
-              icon: '@mipmap/ic_launcher',
-            ),
-            iOS: const DarwinNotificationDetails(
-              presentAlert: true,
-              presentBadge: true,
-              presentSound: true,
-            ),
+      if (data['type'] != 'notice' && data['type'] != 'resource') return;
+
+      final localPayload = <String, dynamic>{
+        ...data,
+        '_messageKey': message.messageId ?? message.hashCode.toString(),
+      };
+      _localPlugin.show(
+        id: message.hashCode,
+        title: notification?.title ?? 'CR Assist',
+        body: notification?.body ?? 'You have a new update',
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channel.id,
+            _channel.name,
+            channelDescription: _channel.description,
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
           ),
-        );
-      }
+          iOS: const DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+        payload: jsonEncode(localPayload),
+      );
     });
+  }
+
+  Future<void> _handleRemoteMessage(RemoteMessage message) async {
+    _handleData(message.data, messageKey: message.messageId);
+  }
+
+  void _handleData(Map<String, dynamic> data, {String? messageKey}) {
+    final key = messageKey ??
+        data['_messageKey']?.toString() ??
+        jsonEncode(data);
+    if (!_handledMessageKeys.add(key)) return;
+
+    final type = data['type']?.toString();
+    final route = data['route']?.toString();
+
+    if (type == 'notice' && route == 'notices') {
+      AppRouter.go('/notice');
+      return;
+    }
+
+    if (type == 'resource' && route == 'subject-resources') {
+      final subjectId = int.tryParse(data['subjectId']?.toString() ?? '');
+      if (subjectId == null || subjectId <= 0) {
+        debugPrint('Resource notification ignored: missing subjectId');
+        return;
+      }
+
+      AppRouter.go(
+        '/resources',
+        extra: {
+          'subjectId': subjectId,
+          'subjectName': data['subjectName']?.toString() ?? 'Resources',
+        },
+      );
+    }
   }
 
   Future<void> dispose() async {
     await _foregroundSubscription?.cancel();
+    await _openedAppSubscription?.cancel();
     _foregroundSubscription = null;
+    _openedAppSubscription = null;
     _initialized = false;
   }
 }

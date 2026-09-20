@@ -15,14 +15,14 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
-  // Initialize Notification Service (FCM & Local Notifications)
-  await NotificationService().initialize();
-
   // Initialize Hive
   await StorageService.init();
 
   // Initialize Dependency Injection
   await init();
+
+  // Initialize Notification Service (FCM & Local Notifications)
+  await NotificationService().initialize();
 
   runApp(const MyApp());
 }
