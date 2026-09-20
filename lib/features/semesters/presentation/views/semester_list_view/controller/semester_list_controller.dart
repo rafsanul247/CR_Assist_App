@@ -1,7 +1,10 @@
 import 'dart:async';
+
 import 'package:cr_assist/core/event_bus/notice_bus.dart';
 import 'package:cr_assist/features/notice/data/models/notice_model.dart';
 import 'package:cr_assist/features/notice/presentation/manager/controller/notice_controller.dart';
+import 'package:cr_assist/core/storage/storage_service.dart';
+import 'package:cr_assist/core/utils/constant.dart';
 import 'package:get/get.dart';
 
 class SemesterListController extends GetxController {
@@ -15,14 +18,21 @@ class SemesterListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    unreadNoticeCount.value =
+        StorageService.get<int>(Constants.keyUnreadNoticeCount) ?? 0;
     _busSub = _noticeBus.stream.listen((event) {
       latestNotice.value = event.notice;
-      unreadNoticeCount.value += 1;
+      _setUnreadCount(unreadNoticeCount.value + 1);
     });
   }
 
   void clearUnreadBadge() {
-    unreadNoticeCount.value = 0;
+    _setUnreadCount(0);
+  }
+
+  void _setUnreadCount(int count) {
+    unreadNoticeCount.value = count;
+    StorageService.set(Constants.keyUnreadNoticeCount, count);
   }
 
   @override

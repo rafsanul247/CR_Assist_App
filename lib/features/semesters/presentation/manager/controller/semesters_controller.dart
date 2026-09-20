@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:cr_assist/core/event_bus/notice_bus.dart';
+import 'package:cr_assist/core/storage/storage_service.dart';
+import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/notice/data/models/notice_model.dart';
 import 'package:cr_assist/features/notice/presentation/manager/controller/notice_controller.dart';
 import 'package:get/get.dart';
+
 import '../../../domain/entities/resource_entity.dart';
 import '../../../domain/entities/semesters_entity.dart';
 import '../../../domain/entities/subject_entity.dart';
 import '../../../domain/usecases/semesters_usecase.dart';
+
 import 'package:cr_assist/injection.dart';
 
 class SemestersController extends GetxController {
@@ -16,7 +20,6 @@ class SemestersController extends GetxController {
 
   final RxInt unreadNoticeCount = 0.obs;
   final Rxn<NoticeModel> latestNotice = Rxn<NoticeModel>();
-
   StreamSubscription<NoticeAddedEvent>? _busSub;
 
   final RxList<SemestersEntity> semesters = <SemestersEntity>[].obs;
@@ -34,14 +37,23 @@ class SemestersController extends GetxController {
   void onInit() {
     super.onInit();
     fetchSemesters();
+    unreadNoticeCount.value =
+        StorageService.get<int>(Constants.keyUnreadNoticeCount) ?? 0;
     _busSub = _noticeBus.stream.listen((event) {
       latestNotice.value = event.notice;
-      unreadNoticeCount.value += 1;
+      _setUnreadCount(unreadNoticeCount.value + 1);
     });
   }
 
+  NoticeController get notices => Get.find<NoticeController>();
+
   void clearUnreadBadge() {
-    unreadNoticeCount.value = 0;
+    _setUnreadCount(0);
+  }
+
+  void _setUnreadCount(int count) {
+    unreadNoticeCount.value = count;
+    StorageService.set(Constants.keyUnreadNoticeCount, count);
   }
 
   @override
@@ -50,16 +62,13 @@ class SemestersController extends GetxController {
     super.onClose();
   }
 
-  NoticeController get notices => Get.find<NoticeController>();
-
-
   Future<void> fetchSemesters() async {
     isLoading.value = true;
     errorMessage.value = '';
     final result = await _useCase.getSemesters();
     result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (data) => semesters.assignAll(data),
+      (failure) => errorMessage.value = failure.message,
+      (data) => semesters.assignAll(data),
     );
     isLoading.value = false;
   }
@@ -71,10 +80,12 @@ class SemestersController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
     final result = await _useCase.getSubjects(semesterId);
-    if (requestId != _subjectRequestId || currentSemesterId != semesterId) return;
+    if (requestId != _subjectRequestId || currentSemesterId != semesterId) {
+      return;
+    }
     result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (data) => subjects.assignAll(data),
+      (failure) => errorMessage.value = failure.message,
+      (data) => subjects.assignAll(data),
     );
     isLoading.value = false;
   }
@@ -83,14 +94,13 @@ class SemestersController extends GetxController {
     isLoading.value = true;
     final result = await _useCase.addSubject(semesterId, name);
     bool success = false;
-    result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (newSubject) {
-        fetchSubjects(semesterId);
-        fetchSemesters();
-        success = true;
-      },
-    );
+    result.fold((failure) => errorMessage.value = failure.message, (
+      newSubject,
+    ) {
+      fetchSubjects(semesterId);
+      fetchSemesters();
+      success = true;
+    });
     isLoading.value = false;
     return success;
   }
@@ -102,10 +112,12 @@ class SemestersController extends GetxController {
     isLoading.value = true;
     errorMessage.value = '';
     final result = await _useCase.getResources(subjectId);
-    if (requestId != _resourceRequestId || currentSubjectId != subjectId) return;
+    if (requestId != _resourceRequestId || currentSubjectId != subjectId) {
+      return;
+    }
     result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (data) => resources.assignAll(data),
+      (failure) => errorMessage.value = failure.message,
+      (data) => resources.assignAll(data),
     );
     isLoading.value = false;
   }
@@ -114,14 +126,11 @@ class SemestersController extends GetxController {
     isLoading.value = true;
     final result = await _useCase.deleteSubject(subjectId);
     bool success = false;
-    result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (_) {
-        fetchSubjects(semesterId);
-        fetchSemesters();
-        success = true;
-      },
-    );
+    result.fold((failure) => errorMessage.value = failure.message, (_) {
+      fetchSubjects(semesterId);
+      fetchSemesters();
+      success = true;
+    });
     isLoading.value = false;
     return success;
   }
@@ -144,7 +153,12 @@ class SemestersController extends GetxController {
         }
       }
 
-      final result = await _useCase.uploadResourceFile(subjectId, title, path, finalType);
+      final result = await _useCase.uploadResourceFile(
+        subjectId,
+        title,
+        path,
+        finalType,
+      );
       result.fold((_) {}, (_) => anySuccess = true);
     }
 
@@ -162,15 +176,12 @@ class SemestersController extends GetxController {
     isLoading.value = true;
     final result = await _useCase.deleteResource(resourceId);
     bool success = false;
-    result.fold(
-          (failure) => errorMessage.value = failure.message,
-          (_) {
-        fetchResources(subjectId);
-        if (currentSemesterId != null) fetchSubjects(currentSemesterId!);
-        fetchSemesters();
-        success = true;
-      },
-    );
+    result.fold((failure) => errorMessage.value = failure.message, (_) {
+      fetchResources(subjectId);
+      if (currentSemesterId != null) fetchSubjects(currentSemesterId!);
+      fetchSemesters();
+      success = true;
+    });
     isLoading.value = false;
     return success;
   }

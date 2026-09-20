@@ -12,6 +12,7 @@ class Constants {
   static const String keyUserBatchName = 'user_batch_name';
   static const String keyUserUniversityName = 'user_university_name';
   static const String keyDarkMode = 'dark_mode';
+  static const String keyUnreadNoticeCount = 'unread_notice_count';
 
   // App Strings
   static const String appName = 'CR Assistant';
