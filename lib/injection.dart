@@ -22,6 +22,7 @@ import 'features/semesters/data/repositories/semesters_repository_implement.dart
 import 'features/semesters/domain/repositories/semesters_repository.dart';
 import 'features/semesters/domain/usecases/semesters_usecase.dart';
 import 'features/semesters/presentation/manager/controller/semesters_controller.dart';
+import 'features/routine/presentation/manager/controller/routine_controller.dart';
 
 import 'features/settings/data/data_sources/settings_data_source.dart';
 import 'features/settings/data/repositories/settings_repository_implement.dart';
@@ -45,6 +46,7 @@ Future<void> init() async {
   await _setUpAuth();
   await _setUpNotice();
   await _setUpSemesters();
+  _setUpRoutine();
   await _setUpSettings();
 }
 
@@ -138,4 +140,9 @@ Future<void> _setUpSettings() async {
   // Controllers
   sl.registerFactory(() => SettingsController(sl()));
   Get.lazyPut(() => sl<SettingsController>());
+}
+
+void _setUpRoutine() {
+  sl.registerFactory(() => RoutineController());
+  Get.lazyPut(() => sl<RoutineController>());
 }

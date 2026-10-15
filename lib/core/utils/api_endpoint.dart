@@ -36,6 +36,14 @@ class ApiEndpoint {
   // Notice
   static const String notices = '/notices';
 
+  // Routine
+  static const String routine = '/routine';
+  static const String routineToday = '/routine/today';
+  static const String routineImage = '/routine/image';
+  static const String routineSlots = '/routine/slots';
+  static const String examSlots = '/routine/exam-slots';
+  static const String notifyToday = '/routine/notify-today';
+
   // Helper method to build full URL
   static String buildUrl(String endpoint) {
     return '$baseUrl$endpoint';

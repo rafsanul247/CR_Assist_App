@@ -113,6 +113,12 @@ class AppRouter {
         pageBuilder: (context, state) => _page(state, const NoticeScreen()),
       ),
       GoRoute(
+        path: '/routine',
+        name: 'routine',
+        pageBuilder: (context, state) =>
+            _page(state, const MainScreen(initialIndex: 1)),
+      ),
+      GoRoute(
         path: '/subjects',
         name: 'subjects',
         pageBuilder: (context, state) {

@@ -1,5 +1,6 @@
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/features/notice/presentation/views/notice_screen.dart';
+import 'package:cr_assist/features/routine/presentation/views/routine_screen.dart';
 import 'package:cr_assist/features/semesters/presentation/views/semester_list_view/semester_list_view.dart';
 import 'package:cr_assist/features/settings/presentation/views/settings_screen.dart';
 import 'package:cr_assist/core/services/fcm_and_local_messaging_service.dart';
@@ -26,6 +27,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _currentIndex = widget.initialIndex;
     _permissionStatus = _notificationService.permissionStatus();
+    _screens = [
+      SemesterListView(onRoutineTap: () => _selectTab(1)),
+      const RoutineScreen(),
+      const NoticeScreen(),
+      const SettingsScreen(),
+    ];
   }
 
   @override
@@ -43,11 +50,12 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
     super.dispose();
   }
 
-  final List<Widget> _screens = const [
-    SemesterListView(),
-    NoticeScreen(),
-    SettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  void _selectTab(int index) {
+    if (!mounted) return;
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +130,14 @@ class _MainScreenState extends State<MainScreen> with WidgetsBindingObserver {
               fontSize: 12,
             ),
             onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
+              _selectTab(index);
             },
             items: const [
               BottomNavigationBarItem(icon: Icon(Iconsax.home), label: 'Home'),
+              BottomNavigationBarItem(
+                icon: Icon(Iconsax.calendar),
+                label: 'Routine',
+              ),
               BottomNavigationBarItem(
                 icon: Icon(Iconsax.notification),
                 label: 'Notice',

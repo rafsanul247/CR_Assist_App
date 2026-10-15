@@ -10,15 +10,88 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+  'high_importance_channel',
+  'High Importance Notifications',
+  description: 'This channel is used for important notification pop-ups.',
+  importance: Importance.max,
+);
+
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   if (kDebugMode) {
     debugPrint(
       'Handling background message: ${message.messageId}, '
-      'title: ${message.notification?.title}, body: ${message.notification?.body}',
+      'title: ${message.notification?.title}, body: ${message.notification?.body}, '
+      'data: ${message.data}',
     );
   }
+
+  final data = Map<String, dynamic>.from(message.data);
+  final type = data['type']?.toString();
+  if (type != 'notice' &&
+      type != 'resource' &&
+      type != 'routine' &&
+      type != 'exam') {
+    return;
+  }
+
+  final localPlugin = FlutterLocalNotificationsPlugin();
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const iosSettings = DarwinInitializationSettings();
+
+  await localPlugin.initialize(
+    settings: const InitializationSettings(
+      android: androidSettings,
+      iOS: iosSettings,
+    ),
+  );
+
+  await localPlugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >()
+      ?.createNotificationChannel(_channel);
+
+  final title =
+      data['title']?.toString() ?? message.notification?.title ?? 'CR Assist';
+  final body =
+      data['body']?.toString() ??
+      message.notification?.body ??
+      'You have a new update';
+
+  final localPayload = <String, dynamic>{
+    ...data,
+    '_messageKey': message.messageId ?? message.hashCode.toString(),
+  };
+
+  await localPlugin.show(
+    id: message.hashCode,
+    title: title,
+    body: body,
+    notificationDetails: NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channel.id,
+        _channel.name,
+        channelDescription: _channel.description,
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+        styleInformation: BigTextStyleInformation(
+          body,
+          contentTitle: title,
+          summaryText: 'CR Assist',
+        ),
+      ),
+      iOS: const DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    ),
+    payload: jsonEncode(localPayload),
+  );
 }
 
 class NotificationService {
@@ -35,13 +108,6 @@ class NotificationService {
   StreamSubscription<RemoteMessage>? _openedAppSubscription;
   final Set<String> _handledMessageKeys = <String>{};
   bool _initialized = false;
-
-  static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
-    'high_importance_channel',
-    'High Importance Notifications',
-    description: 'This channel is used for important notification pop-ups.',
-    importance: Importance.max,
-  );
 
   Future<void> initialize() async {
     if (_initialized) return;
@@ -68,6 +134,20 @@ class NotificationService {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleRemoteMessage(initialMessage);
       });
+    }
+
+    final launchDetails = await _localPlugin.getNotificationAppLaunchDetails();
+    if (launchDetails?.didNotificationLaunchApp ?? false) {
+      final payload = launchDetails?.notificationResponse?.payload;
+      if (payload != null && payload.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          try {
+            _handleData(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+          } catch (error) {
+            debugPrint('Failed to handle launch notification payload: $error');
+          }
+        });
+      }
     }
   }
 
@@ -139,7 +219,9 @@ class NotificationService {
   }
 
   Future<void> _setupLocalNotifications() async {
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
     const iosSettings = DarwinInitializationSettings();
 
     await _localPlugin.initialize(
@@ -178,16 +260,27 @@ class NotificationService {
         );
       }
 
-      if (data['type'] != 'notice' && data['type'] != 'resource') return;
+      if (data['type'] != 'notice' &&
+          data['type'] != 'resource' &&
+          data['type'] != 'routine' &&
+          data['type'] != 'exam') {
+        return;
+      }
 
       final localPayload = <String, dynamic>{
         ...data,
         '_messageKey': message.messageId ?? message.hashCode.toString(),
       };
+      final title =
+          data['title']?.toString() ?? notification?.title ?? 'CR Assist';
+      final body =
+          data['body']?.toString() ??
+          notification?.body ??
+          'You have a new update';
       _localPlugin.show(
         id: message.hashCode,
-        title: notification?.title ?? 'CR Assist',
-        body: notification?.body ?? 'You have a new update',
+        title: title,
+        body: body,
         notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
@@ -196,6 +289,11 @@ class NotificationService {
             importance: Importance.max,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
+            styleInformation: BigTextStyleInformation(
+              body,
+              contentTitle: title,
+              summaryText: 'CR Assist',
+            ),
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,
@@ -213,9 +311,8 @@ class NotificationService {
   }
 
   void _handleData(Map<String, dynamic> data, {String? messageKey}) {
-    final key = messageKey ??
-        data['_messageKey']?.toString() ??
-        jsonEncode(data);
+    final key =
+        messageKey ?? data['_messageKey']?.toString() ?? jsonEncode(data);
     if (!_handledMessageKeys.add(key)) return;
 
     final type = data['type']?.toString();
@@ -223,6 +320,12 @@ class NotificationService {
 
     if (type == 'notice' && route == 'notices') {
       AppRouter.go('/notice');
+      return;
+    }
+
+    if ((type == 'routine' || type == 'exam') &&
+        (route == null || route == 'routine')) {
+      AppRouter.go('/routine');
       return;
     }
 
