@@ -489,4 +489,51 @@ void main() {
     expect(find.widgetWithText(AlertDialog, 'Add exam'), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('class routine displays timetable first and expandable image card below', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const GetMaterialApp(home: RoutineScreen()));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Weekly timetable'), findsOneWidget);
+
+    final viewFullRoutineFinder = find.text('View full class routine');
+    await tester.scrollUntilVisible(
+      viewFullRoutineFinder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(viewFullRoutineFinder, findsOneWidget);
+
+    await tester.tap(viewFullRoutineFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('No routine image uploaded yet.'), findsOneWidget);
+  });
+
+  testWidgets('exam routine displays timetable first and expandable image card below', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const GetMaterialApp(home: RoutineScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Exam routine'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Exam schedule'), findsOneWidget);
+
+    final viewFullExamRoutineFinder = find.text('View full exam routine');
+    await tester.scrollUntilVisible(
+      viewFullExamRoutineFinder,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(viewFullExamRoutineFinder, findsOneWidget);
+
+    await tester.tap(viewFullExamRoutineFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('No routine image uploaded yet.'), findsOneWidget);
+  });
 }

@@ -93,6 +93,7 @@ class SettingsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             _SettingsGroup(
               title: "Session",
+              hasBorder: true,
               items: [
                 SettingsItemModel(
                   title: "Log Out",
@@ -124,9 +125,6 @@ class _UserProfileCard extends StatelessWidget {
           ? UColors.primary.withValues(alpha: 0.3)
           : UColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: UColors.borderDark.withValues(alpha: 0.5),
-        ),
       ),
       child: Row(
         children: [
@@ -172,10 +170,12 @@ class _UserProfileCard extends StatelessWidget {
 class _SettingsGroup extends StatelessWidget {
   final String title;
   final List<SettingsItemModel> items;
+  final bool hasBorder;
 
   const _SettingsGroup({
     required this.title,
     required this.items,
+    this.hasBorder = false,
   });
 
   @override
@@ -200,9 +200,11 @@ class _SettingsGroup extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
-            ),
+            border: hasBorder
+                ? Border.all(
+                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                  )
+                : null,
           ),
           child: ListView.separated(
             shrinkWrap: true,

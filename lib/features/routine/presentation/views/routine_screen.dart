@@ -55,7 +55,7 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
           child: _TodayCardSurface(
             onTap: _controller.fetchToday,
             eyebrow: 'ROUTINE',
-            title: 'Couldn\'t load today\'s schedule',
+            title: 'Couldn\'t load',
             subtitle: _controller.todayErrorMessage.value.isEmpty
                 ? 'Tap to try again.'
                 : _controller.todayErrorMessage.value,
@@ -73,14 +73,16 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
         _currentPage = slots.length - 1;
       }
       if (slots.isNotEmpty) {
+        final hasMultipleSlots = slots.length > 1;
         final cards = PageView.builder(
           controller: _pageController,
           itemCount: slots.length,
+          clipBehavior: Clip.none,
           onPageChanged: (index) => setState(() => _currentPage = index),
           itemBuilder: (context, index) {
             final item = slots[index];
             final slot = item.slot;
-            return _TodayCardSurface(
+            final card = _TodayCardSurface(
               onTap: widget.onOpenRoutine ?? () => AppRouter.go('/routine'),
               eyebrow: item.isExam ? 'EXAM' : 'ROUTINE',
               title: slot.subjectName.isEmpty
@@ -95,10 +97,22 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
               teacher: item.isExam ? null : slot.teacher,
               room: slot.room,
             );
+            if (!hasMultipleSlots) {
+              return card;
+            }
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: card,
+            );
           },
         );
         return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+          padding: EdgeInsets.fromLTRB(
+            hasMultipleSlots ? 8 : 16,
+            0,
+            hasMultipleSlots ? 8 : 16,
+            4,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -159,37 +173,32 @@ class _TodayCardLoadingPlaceholder extends StatelessWidget {
   const _TodayCardLoadingPlaceholder();
 
   @override
-  Widget build(BuildContext context) => Container(
-    height: 156,
-    width: double.infinity,
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(20),
-      gradient: const LinearGradient(
-        colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: UColors.primary.withValues(alpha: 0.18),
-          blurRadius: 18,
-          offset: const Offset(0, 8),
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(28),
+    child: Container(
+      height: 156,
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _placeholderBar(width: 84, height: 10, opacity: 0.25),
-        const SizedBox(height: 14),
-        _placeholderBar(width: 174, height: 26, opacity: 0.32),
-        const SizedBox(height: 9),
-        _placeholderBar(width: 142, height: 16, opacity: 0.22),
-        const Spacer(),
-        _placeholderBar(width: 216, height: 14, opacity: 0.2),
-      ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _placeholderBar(width: 84, height: 10, opacity: 0.25),
+          const SizedBox(height: 14),
+          _placeholderBar(width: 174, height: 26, opacity: 0.32),
+          const SizedBox(height: 9),
+          _placeholderBar(width: 142, height: 16, opacity: 0.22),
+          const Spacer(),
+          _placeholderBar(width: 216, height: 14, opacity: 0.2),
+        ],
+      ),
     ),
   );
 
@@ -238,34 +247,27 @@ class _TodayCardSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     const colors = [Color(0xFF3B82F6), Color(0xFF1D4ED8)];
     final dateText = subtitle;
-    return Material(
-      color: Colors.transparent,
+    return ClipRRect(
       borderRadius: BorderRadius.circular(28),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(28),
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(minHeight: 156),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
-            gradient: LinearGradient(
-              colors: colors,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: UColors.primary.withValues(alpha: 0.22),
-                blurRadius: 20,
-                offset: const Offset(0, 9),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 156),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: colors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
+            ),
+            child: empty || isUnavailable
+                ? _buildEmptyState(context, dateText)
+                : _buildScheduleState(context, dateText),
           ),
-          child: empty || isUnavailable
-              ? _buildEmptyState(context, dateText)
-              : _buildScheduleState(context, dateText),
         ),
       ),
     );
@@ -498,6 +500,8 @@ class RoutineScreen extends StatefulWidget {
 }
 
 class _RoutineScreenState extends State<RoutineScreen> {
+  static const mintColor = Color(0xFF4FA08A);
+
   static const _days = [
     ('SATURDAY', 'SAT'),
     ('SUNDAY', 'SUN'),
@@ -511,6 +515,8 @@ class _RoutineScreenState extends State<RoutineScreen> {
   late final RoutineController _controller;
   String _selectedDay = _days[(DateTime.now().weekday + 1) % 7].$1;
   int _selectedRoutineTab = 0;
+  bool _isClassRoutineExpanded = false;
+  bool _isExamRoutineExpanded = false;
 
   @override
   void initState() {
@@ -568,14 +574,34 @@ class _RoutineScreenState extends State<RoutineScreen> {
 
   Widget _buildRoutineHero(BuildContext context, RoutineSchedule schedule) {
     final theme = Theme.of(context);
-    final selectedDate = _dateForSelectedDay();
-    final selectedDateKey = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final classCount = schedule.classSlots
-        .where((slot) => slot.dayOfWeek.toUpperCase() == _selectedDay)
-        .length;
-    final examCount = schedule.examSlots
-        .where((slot) => slot.examDate == selectedDateKey)
-        .length;
+    final todayDate =
+        DateTime.tryParse(_controller.today.value?.date ?? '') ??
+        DateTime.now();
+    final todayDateKey = DateFormat('yyyy-MM-dd').format(todayDate);
+    final todayWeekday = DateFormat('EEEE').format(todayDate).toUpperCase();
+
+    final todayModel = _controller.today.value;
+    final int classCount;
+    if (todayModel != null &&
+        (todayModel.todayClasses.isNotEmpty ||
+            todayModel.hasClassesToday == false)) {
+      classCount = todayModel.todayClasses.length;
+    } else {
+      classCount = schedule.classSlots
+          .where((slot) => slot.dayOfWeek.toUpperCase() == todayWeekday)
+          .length;
+    }
+
+    final int examCount;
+    if (todayModel != null &&
+        (todayModel.todayExams.isNotEmpty || todayModel.hasExamToday == false)) {
+      examCount = todayModel.todayExams.length;
+    } else {
+      examCount = schedule.examSlots
+          .where((slot) => _isExamOnWeekday(slot, todayWeekday, todayDateKey))
+          .length;
+    }
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
@@ -611,7 +637,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  DateFormat('EEEE, d MMMM').format(selectedDate),
+                  DateFormat('EEEE, d MMMM').format(todayDate),
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: Colors.white.withValues(alpha: 0.84),
                     fontWeight: FontWeight.w600,
@@ -841,6 +867,40 @@ class _RoutineScreenState extends State<RoutineScreen> {
     ),
   );
 
+  bool _isExamOnWeekday(
+    RoutineSlot slot,
+    String dayOfWeek,
+    String scheduleDateKey,
+  ) {
+    if (slot.examDate.isNotEmpty && slot.examDate.startsWith(scheduleDateKey)) {
+      return true;
+    }
+    final parsed = DateTime.tryParse(slot.examDate);
+    if (parsed != null) {
+      final parsedDateKey = DateFormat('yyyy-MM-dd').format(parsed);
+      if (parsedDateKey == scheduleDateKey) {
+        return true;
+      }
+      const weekdayNames = {
+        DateTime.monday: 'MONDAY',
+        DateTime.tuesday: 'TUESDAY',
+        DateTime.wednesday: 'WEDNESDAY',
+        DateTime.thursday: 'THURSDAY',
+        DateTime.friday: 'FRIDAY',
+        DateTime.saturday: 'SATURDAY',
+        DateTime.sunday: 'SUNDAY',
+      };
+      if (weekdayNames[parsed.weekday] == dayOfWeek.toUpperCase()) {
+        return true;
+      }
+    }
+    if (slot.dayOfWeek.isNotEmpty &&
+        slot.dayOfWeek.toUpperCase() == dayOfWeek.toUpperCase()) {
+      return true;
+    }
+    return false;
+  }
+
   Widget _buildClassRoutine(
     BuildContext context,
     RoutineSchedule schedule,
@@ -854,20 +914,13 @@ class _RoutineScreenState extends State<RoutineScreen> {
             .toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime));
     final examsForDay = schedule.examSlots
-        .where((slot) => slot.examDate == scheduleDateKey)
+        .where((slot) => _isExamOnWeekday(slot, _selectedDay, scheduleDateKey))
         .length;
     return RefreshIndicator(
       onRefresh: _controller.fetchSchedule,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
         children: [
-          _routineImageCard(
-            context,
-            image: schedule.classImage,
-            type: 'CLASS',
-            isCR: isCR,
-          ),
-          const SizedBox(height: 18),
           _sectionHeader(
             context,
             'Weekly timetable',
@@ -899,7 +952,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
                       decoration: BoxDecoration(
                         gradient: selected
                             ? const LinearGradient(
-                                colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                                colors: [mintColor, Color(0xFF3B826F)],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               )
@@ -910,7 +963,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
                         borderRadius: BorderRadius.circular(13),
                         border: Border.all(
                           color: selected
-                              ? UColors.primary
+                              ? mintColor
                               : Theme.of(context).dividerColor,
                         ),
                       ),
@@ -976,7 +1029,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
             ),
             child: Row(
               children: [
-                const Icon(Iconsax.calendar, size: 17, color: UColors.primary),
+                const Icon(Iconsax.calendar, size: 17, color: mintColor),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1009,6 +1062,17 @@ class _RoutineScreenState extends State<RoutineScreen> {
                 onDelete: () => _deleteSlot(slot, exam: false),
               ),
             ),
+          const SizedBox(height: 14),
+          _buildExpandableRoutineImageCard(
+            context,
+            image: schedule.classImage,
+            type: 'CLASS',
+            isCR: isCR,
+            isExpanded: _isClassRoutineExpanded,
+            onToggle: () => setState(
+              () => _isClassRoutineExpanded = !_isClassRoutineExpanded,
+            ),
+          ),
         ],
       ),
     );
@@ -1036,13 +1100,6 @@ class _RoutineScreenState extends State<RoutineScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 28),
         children: [
-          _routineImageCard(
-            context,
-            image: schedule.examImage,
-            type: 'EXAM',
-            isCR: isCR,
-          ),
-          const SizedBox(height: 18),
           _sectionHeader(
             context,
             'Exam schedule',
@@ -1063,7 +1120,7 @@ class _RoutineScreenState extends State<RoutineScreen> {
                       const Icon(
                         Iconsax.calendar,
                         size: 18,
-                        color: UColors.primary,
+                        color: mintColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -1086,6 +1143,17 @@ class _RoutineScreenState extends State<RoutineScreen> {
                 ),
               ],
             ),
+          const SizedBox(height: 14),
+          _buildExpandableRoutineImageCard(
+            context,
+            image: schedule.examImage,
+            type: 'EXAM',
+            isCR: isCR,
+            isExpanded: _isExamRoutineExpanded,
+            onToggle: () => setState(
+              () => _isExamRoutineExpanded = !_isExamRoutineExpanded,
+            ),
+          ),
         ],
       ),
     );
@@ -1111,191 +1179,297 @@ class _RoutineScreenState extends State<RoutineScreen> {
     ],
   );
 
-  Widget _routineImageCard(
+  Widget _buildExpandableRoutineImageCard(
     BuildContext context, {
     required RoutineImage image,
     required String type,
     required bool isCR,
+    required bool isExpanded,
+    required VoidCallback onToggle,
   }) {
+    final theme = Theme.of(context);
     final hasImage = image.imageUrl.isNotEmpty;
+    final title = type == 'CLASS'
+        ? 'View full class routine'
+        : 'View full exam routine';
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isExpanded
+              ? UColors.primary.withValues(alpha: 0.35)
+              : theme.dividerColor,
+        ),
+        boxShadow: isExpanded
+            ? [
+                BoxShadow(
+                  color: UColors.primary.withValues(alpha: 0.05),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 15, 16, 12),
-            child: Row(
-              children: [
-                Container(
-                  width: 38,
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: UColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    type == 'CLASS'
-                        ? Icons.calendar_view_week_rounded
-                        : Icons.edit_calendar_rounded,
-                    color: UColors.primary,
-                    size: 20,
-                  ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: onToggle,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
                 ),
-                const SizedBox(width: 11),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: UColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                      child: Icon(
+                        type == 'CLASS'
+                            ? Icons.calendar_view_week_rounded
+                            : Icons.edit_calendar_rounded,
+                        color: UColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: (hasImage
+                                ? UColors.primary
+                                : theme.colorScheme.onSurfaceVariant)
+                            .withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        hasImage ? 'Image' : 'No image',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: hasImage
+                              ? UColors.primary
+                              : theme.colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0.0,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOutCubic,
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: theme.colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          AnimatedCrossFade(
+            firstChild: const SizedBox(width: double.infinity, height: 0),
+            secondChild: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: theme.dividerColor.withValues(alpha: 0.6),
+                ),
+                const SizedBox(height: 12),
+                if (hasImage)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => _RoutineImageViewer(
+                              imageUrl: image.imageUrl,
+                              title: image.title.isEmpty
+                                  ? '$type Routine'
+                                  : image.title,
+                            ),
+                          ),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.bottomRight,
+                          children: [
+                            Image.network(
+                              image.imageUrl,
+                              height: 220,
+                              width: double.infinity,
+                              fit: BoxFit.contain,
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                final total = progress.expectedTotalBytes;
+                                return SizedBox(
+                                  height: 180,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: UColors.primary,
+                                      value: total == null
+                                          ? null
+                                          : progress.cumulativeBytesLoaded /
+                                              total,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, _, _) => Container(
+                                height: 180,
+                                color: theme.colorScheme
+                                    .surfaceContainerHighest,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.broken_image_outlined,
+                                      color: theme.colorScheme
+                                          .onSurfaceVariant,
+                                      size: 30,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      'Could not load this routine image',
+                                      style: theme.textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 9,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.65),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.fullscreen_rounded,
+                                    color: Colors.white,
+                                    size: 15,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Tap to zoom',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(14, 0, 14, 4),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 24,
+                      horizontal: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerHighest
+                          .withValues(alpha: 0.48),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.image_search_rounded,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          size: 30,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          isCR
+                              ? 'Add a clear ${type.toLowerCase()} timetable image for your batch.'
+                              : 'No routine image uploaded yet.',
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text(
-                        image.title.isNotEmpty ? image.title : '$type ROUTINE',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        hasImage ? 'Tap image to zoom' : 'Routine timetable',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
+                      if (hasImage)
+                        TextButton.icon(
+                          onPressed: () =>
+                              _downloadImage(image.imageUrl, image.title),
+                          icon: const Icon(Iconsax.receive_square, size: 18),
+                          label: const Text('Download'),
+                        ),
+                      if (isCR)
+                        TextButton.icon(
+                          onPressed: () => _uploadImage(type),
+                          icon:
+                              Icon(hasImage ? Icons.edit_outlined : Icons.add),
+                          label:
+                              Text(hasImage ? 'Change Image' : 'Upload Image'),
+                        ),
+                      if (isCR && hasImage)
+                        IconButton(
+                          tooltip: 'Delete image',
+                          onPressed: () => _deleteImage(type),
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            color: UColors.error,
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                if (hasImage)
-                  Icon(
-                    Icons.open_in_full_rounded,
-                    size: 17,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
               ],
             ),
-          ),
-          if (hasImage)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => _RoutineImageViewer(
-                        imageUrl: image.imageUrl,
-                        title: image.title.isEmpty
-                            ? '$type Routine'
-                            : image.title,
-                      ),
-                    ),
-                  ),
-                  child: Image.network(
-                    image.imageUrl,
-                    height: 210,
-                    width: double.infinity,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      final total = progress.expectedTotalBytes;
-                      return SizedBox(
-                        height: 170,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: UColors.primary,
-                            value: total == null
-                                ? null
-                                : progress.cumulativeBytesLoaded / total,
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (_, _, _) => Container(
-                      height: 170,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image_outlined,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                            size: 30,
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Could not load this routine image',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else
-            Container(
-              margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-              padding: const EdgeInsets.symmetric(vertical: 26, horizontal: 20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest
-                    .withValues(alpha: 0.48),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.image_search_rounded,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    size: 30,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isCR
-                        ? 'Add a clear ${type.toLowerCase()} timetable image for your batch.'
-                        : 'No routine image uploaded yet.',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ],
-              ),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 4, 12, 10),
-            child: Wrap(
-              alignment: WrapAlignment.end,
-              spacing: 6,
-              children: [
-                if (hasImage)
-                  TextButton.icon(
-                    onPressed: () =>
-                        _downloadImage(image.imageUrl, image.title),
-                    icon: const Icon(Iconsax.receive_square, size: 18),
-                    label: const Text('Download'),
-                  ),
-                if (isCR)
-                  TextButton.icon(
-                    onPressed: () => _uploadImage(type),
-                    icon: Icon(hasImage ? Icons.edit_outlined : Icons.add),
-                    label: Text(hasImage ? 'Change' : 'Upload Image'),
-                  ),
-                if (isCR && hasImage)
-                  IconButton(
-                    tooltip: 'Delete image',
-                    onPressed: () => _deleteImage(type),
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: UColors.error,
-                    ),
-                  ),
-              ],
-            ),
+            crossFadeState: isExpanded
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
           ),
         ],
       ),
@@ -1317,48 +1491,38 @@ class _RoutineScreenState extends State<RoutineScreen> {
     final dateLabel = isExam && slot.examDate.isNotEmpty
         ? _formatDate(slot.examDate)
         : '';
-    final color = isToday ? UColors.error : UColors.primary;
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: mintColor,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isToday
-              ? UColors.error.withValues(alpha: 0.35)
-              : Theme.of(context).dividerColor,
-        ),
+        boxShadow: [
+          BoxShadow(
+            color: mintColor.withValues(alpha: 0.28),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 82,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(18),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: Icon(
+                isExam ? Icons.edit_calendar_rounded : Icons.menu_book_rounded,
+                color: Colors.white,
+                size: 22,
               ),
             ),
-          ),
-          const SizedBox(width: 13),
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(13),
-            ),
-            child: Icon(
-              isExam ? Icons.edit_calendar_rounded : Icons.menu_book_rounded,
-              color: color,
-              size: 21,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 13),
+            const SizedBox(width: 14),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1369,29 +1533,34 @@ class _RoutineScreenState extends State<RoutineScreen> {
                           slot.subjectName,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
-                      if (isToday)
+                      if (isToday) ...[
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 4,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: UColors.error.withValues(alpha: 0.1),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Text(
+                          child: const Text(
                             'TODAY',
-                            style: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  color: UColors.error,
-                                  fontWeight: FontWeight.w700,
-                                ),
+                            style: TextStyle(
+                              color: mintColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 5),
@@ -1405,23 +1574,31 @@ class _RoutineScreenState extends State<RoutineScreen> {
                     ].join('  ·  '),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-          if (isCR)
-            PopupMenuButton<String>(
-              onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'edit', child: Text('Edit')),
-                PopupMenuItem(value: 'delete', child: Text('Delete')),
-              ],
-            )
-          else
-            const SizedBox(width: 12),
-        ],
+            if (isCR)
+              PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white,
+                ),
+                onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
+                itemBuilder: (_) => const [
+                  PopupMenuItem(value: 'edit', child: Text('Edit')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete')),
+                ],
+              )
+            else
+              const SizedBox(width: 4),
+          ],
+        ),
       ),
     );
   }
@@ -1432,7 +1609,6 @@ class _RoutineScreenState extends State<RoutineScreen> {
     decoration: BoxDecoration(
       color: Theme.of(context).colorScheme.surface,
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Theme.of(context).dividerColor),
     ),
     child: Column(
       children: [
@@ -1811,12 +1987,11 @@ class _EditSlotDialogState extends State<_EditSlotDialog> {
 
                     final success = await widget.onSave(values);
 
-                    if (mounted) {
-                      setState(() => _isSaving = false);
-                      if (success) {
-                        _isClosing = true;
-                        Navigator.of(context).pop(true);
-                      }
+                    if (!context.mounted) return;
+                    setState(() => _isSaving = false);
+                    if (success) {
+                      _isClosing = true;
+                      Navigator.of(context).pop(true);
                     }
                   },
             child: _isSaving
