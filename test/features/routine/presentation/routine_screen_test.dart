@@ -13,12 +13,14 @@ class _RoutineDioClient extends DioClient {
     this.teacher = 'Dr. Sabrina Rahman',
     this.multipleTodaySlots = false,
     this.isCR = false,
+    this.postDelay,
   }) : super();
 
   final bool hasScheduleToday;
   final String teacher;
   final bool multipleTodaySlots;
   final bool isCR;
+  final Duration? postDelay;
 
   @override
   Future<Response> get(
@@ -143,6 +145,9 @@ class _RoutineDioClient extends DioClient {
     ProgressCallback? onSendProgress,
     ProgressCallback? onReceiveProgress,
   }) async {
+    if (postDelay != null) {
+      await Future<void>.delayed(postDelay!);
+    }
     return Response(
       requestOptions: RequestOptions(path: path),
       data: {'status': 'success'},
@@ -386,7 +391,9 @@ void main() {
   ) async {
     Get.reset();
     await sl.reset();
-    sl.registerSingleton<DioClient>(_RoutineDioClient(isCR: true));
+    sl.registerSingleton<DioClient>(
+      _RoutineDioClient(isCR: true, postDelay: const Duration(milliseconds: 50)),
+    );
     Get.put(RoutineController());
 
     await tester.pumpWidget(const GetMaterialApp(home: RoutineScreen()));
@@ -403,7 +410,7 @@ void main() {
     await tester.tap(addBtn);
     await tester.pumpAndSettle();
 
-    expect(find.text('Add class'), findsOneWidget);
+    expect(find.widgetWithText(AlertDialog, 'Add class'), findsOneWidget);
 
     await tester.enterText(
       find.widgetWithText(TextField, 'Subject name'),
@@ -419,9 +426,67 @@ void main() {
     );
 
     await tester.tap(find.text('Save'));
+    await tester.pump();
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
     await tester.pumpAndSettle();
 
-    expect(find.text('Add class'), findsNothing);
+    expect(find.widgetWithText(AlertDialog, 'Add class'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('adding an exam slot shows CircularProgressIndicator while saving', (
+    tester,
+  ) async {
+    Get.reset();
+    await sl.reset();
+    sl.registerSingleton<DioClient>(
+      _RoutineDioClient(isCR: true, postDelay: const Duration(milliseconds: 50)),
+    );
+    Get.put(RoutineController());
+
+    await tester.pumpWidget(const GetMaterialApp(home: RoutineScreen()));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Exam routine'));
+    await tester.pumpAndSettle();
+
+    final addBtn = find.text('Add exam');
+    await tester.scrollUntilVisible(
+      addBtn,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(addBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.widgetWithText(AlertDialog, 'Add exam'), findsOneWidget);
+
+    await tester.tap(find.text('Choose exam date'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Subject name'),
+      'Software Engineering Exam',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Start time (e.g. 08:30 AM)'),
+      '02:00 PM',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextField, 'End time (e.g. 09:45 AM)'),
+      '05:00 PM',
+    );
+
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(AlertDialog, 'Add exam'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

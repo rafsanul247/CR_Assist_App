@@ -1540,24 +1540,27 @@ class _RoutineScreenState extends State<RoutineScreen> {
   }
 
   Future<void> _editSlot({required bool exam, RoutineSlot? slot}) async {
-    final values = await showDialog<Map<String, dynamic>>(
+    await showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) => _EditSlotDialog(
         exam: exam,
         slot: slot,
         selectedDay: _selectedDay,
         days: _days,
+        onSave: (values) async {
+          final success = await _controller.saveSlot(
+            exam: exam,
+            values: values,
+            slotId: slot?.id,
+          );
+          if (mounted) {
+            _showMutationResult(success, success ? 'Schedule saved.' : null);
+          }
+          return success;
+        },
       ),
     );
-    if (!mounted || values == null) return;
-    final success = await _controller.saveSlot(
-      exam: exam,
-      values: values,
-      slotId: slot?.id,
-    );
-    if (mounted) {
-      _showMutationResult(success, success ? 'Schedule saved.' : null);
-    }
   }
 
   Future<void> _downloadImage(String url, String title) async {
@@ -1644,12 +1647,14 @@ class _EditSlotDialog extends StatefulWidget {
     this.slot,
     required this.selectedDay,
     required this.days,
+    required this.onSave,
   });
 
   final bool exam;
   final RoutineSlot? slot;
   final String selectedDay;
   final List<(String, String)> days;
+  final Future<bool> Function(Map<String, dynamic> values) onSave;
 
   @override
   State<_EditSlotDialog> createState() => _EditSlotDialogState();
@@ -1664,6 +1669,7 @@ class _EditSlotDialogState extends State<_EditSlotDialog> {
   late final TextEditingController _roomController;
   late String _selectedDay;
   DateTime? _examDate;
+  bool _isSaving = false;
   bool _isClosing = false;
 
   @override
@@ -1695,114 +1701,149 @@ class _EditSlotDialogState extends State<_EditSlotDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(
-        '${widget.slot == null ? 'Add' : 'Edit'} ${widget.exam ? 'exam' : 'class'}',
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.exam)
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(
-                  _examDate == null
-                      ? 'Choose exam date'
-                      : DateFormat('dd MMM yyyy').format(_examDate!),
-                ),
-                trailing: const Icon(Icons.calendar_month),
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: _examDate ?? DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(
-                      const Duration(days: 3650),
-                    ),
-                  );
-                  if (date != null && mounted) {
-                    setState(() => _examDate = date);
-                  }
-                },
-              )
-            else
-              DropdownButtonFormField<String>(
-                initialValue: _selectedDay,
-                decoration: const InputDecoration(labelText: 'Day'),
-                items: widget.days
-                    .map(
-                      (item) => DropdownMenuItem(
-                        value: item.$1,
-                        child: Text(item.$2),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _selectedDay = value);
-                  }
-                },
-              ),
-            _formField(_subjectController, 'Subject name'),
-            _formField(_codeController, 'Course code (optional)'),
-            _formField(_startController, 'Start time (e.g. 08:30 AM)'),
-            _formField(_endController, 'End time (e.g. 09:45 AM)'),
-            if (!widget.exam)
-              _formField(_teacherController, 'Teacher (optional)'),
-            _formField(_roomController, 'Room (optional)'),
-          ],
+    return PopScope(
+      canPop: !_isSaving && !_isClosing,
+      child: AlertDialog(
+        title: Text(
+          '${widget.slot == null ? 'Add' : 'Edit'} ${widget.exam ? 'exam' : 'class'}',
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () {
-            if (_isClosing) return;
-            _isClosing = true;
-            Navigator.of(context).pop();
-          },
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            if (_isClosing) return;
-            if (_subjectController.text.trim().isEmpty ||
-                _startController.text.trim().isEmpty ||
-                _endController.text.trim().isEmpty ||
-                (widget.exam && _examDate == null)) {
-              AppFeedback.showError(
-                context,
-                message: widget.exam && _examDate == null
-                    ? 'Choose the exam date.'
-                    : 'Enter a subject and both start and end times.',
-                title: 'Required fields',
-              );
-              return;
-            }
-            _isClosing = true;
-            Navigator.of(context).pop({
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               if (widget.exam)
-                'examDate': DateFormat('yyyy-MM-dd').format(_examDate!)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    _examDate == null
+                        ? 'Choose exam date'
+                        : DateFormat('dd MMM yyyy').format(_examDate!),
+                  ),
+                  trailing: const Icon(Icons.calendar_month),
+                  onTap: _isSaving
+                      ? null
+                      : () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _examDate ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 3650),
+                            ),
+                          );
+                          if (date != null && mounted) {
+                            setState(() => _examDate = date);
+                          }
+                        },
+                )
               else
-                'dayOfWeek': _selectedDay,
-              'subjectName': _subjectController.text.trim(),
-              'courseCode': _codeController.text.trim(),
-              'startTime': _startController.text.trim(),
-              'endTime': _endController.text.trim(),
-              if (!widget.exam) 'teacher': _teacherController.text.trim(),
-              'room': _roomController.text.trim(),
-            });
-          },
-          child: const Text('Save'),
+                DropdownButtonFormField<String>(
+                  initialValue: _selectedDay,
+                  decoration: const InputDecoration(labelText: 'Day'),
+                  items: widget.days
+                      .map(
+                        (item) => DropdownMenuItem(
+                          value: item.$1,
+                          child: Text(item.$2),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: _isSaving
+                      ? null
+                      : (value) {
+                          if (value != null) {
+                            setState(() => _selectedDay = value);
+                          }
+                        },
+                ),
+              _formField(_subjectController, 'Subject name', enabled: !_isSaving),
+              _formField(_codeController, 'Course code (optional)', enabled: !_isSaving),
+              _formField(_startController, 'Start time (e.g. 08:30 AM)', enabled: !_isSaving),
+              _formField(_endController, 'End time (e.g. 09:45 AM)', enabled: !_isSaving),
+              if (!widget.exam)
+                _formField(_teacherController, 'Teacher (optional)', enabled: !_isSaving),
+              _formField(_roomController, 'Room (optional)', enabled: !_isSaving),
+            ],
+          ),
         ),
-      ],
+        actions: [
+          TextButton(
+            onPressed: (_isSaving || _isClosing)
+                ? null
+                : () {
+                    _isClosing = true;
+                    Navigator.of(context).pop(false);
+                  },
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: (_isSaving || _isClosing)
+                ? null
+                : () async {
+                    if (_subjectController.text.trim().isEmpty ||
+                        _startController.text.trim().isEmpty ||
+                        _endController.text.trim().isEmpty ||
+                        (widget.exam && _examDate == null)) {
+                      AppFeedback.showError(
+                        context,
+                        message: widget.exam && _examDate == null
+                            ? 'Choose the exam date.'
+                            : 'Enter a subject and both start and end times.',
+                        title: 'Required fields',
+                      );
+                      return;
+                    }
+                    setState(() => _isSaving = true);
+                    FocusScope.of(context).unfocus();
+
+                    final values = {
+                      if (widget.exam)
+                        'examDate': DateFormat('yyyy-MM-dd').format(_examDate!)
+                      else
+                        'dayOfWeek': _selectedDay,
+                      'subjectName': _subjectController.text.trim(),
+                      'courseCode': _codeController.text.trim(),
+                      'startTime': _startController.text.trim(),
+                      'endTime': _endController.text.trim(),
+                      if (!widget.exam) 'teacher': _teacherController.text.trim(),
+                      'room': _roomController.text.trim(),
+                    };
+
+                    final success = await widget.onSave(values);
+
+                    if (mounted) {
+                      setState(() => _isSaving = false);
+                      if (success) {
+                        _isClosing = true;
+                        Navigator.of(context).pop(true);
+                      }
+                    }
+                  },
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Save'),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _formField(TextEditingController controller, String label) => Padding(
+  Widget _formField(
+    TextEditingController controller,
+    String label, {
+    bool enabled = true,
+  }) => Padding(
     padding: const EdgeInsets.only(top: 10),
     child: TextField(
       controller: controller,
+      enabled: enabled,
       decoration: InputDecoration(labelText: label),
       textCapitalization: TextCapitalization.sentences,
     ),
