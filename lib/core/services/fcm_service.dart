@@ -6,10 +6,12 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
 class FcmService {
-  FcmService({required this._dioClient});
+  FcmService({required this._dioClient, FirebaseMessaging? messaging})
+      : _messagingInstance = messaging;
 
   final DioClient _dioClient;
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final FirebaseMessaging? _messagingInstance;
+  FirebaseMessaging get _messaging => _messagingInstance ?? FirebaseMessaging.instance;
   StreamSubscription<String>? _tokenSubscription;
   String? _currentTopic;
 

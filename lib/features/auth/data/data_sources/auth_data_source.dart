@@ -1,6 +1,9 @@
+import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/utils/api_endpoint.dart';
 import '../../../../core/error/exception_handler.dart';
+import '../../../../core/storage/storage_service.dart';
+import '../../../../core/utils/constant.dart';
 import '../models/auth_model.dart';
 
 class AuthResult {
@@ -22,6 +25,7 @@ abstract class AuthDataSource {
     String? classCode,
   });
   Future<String> getMyClassCode();
+  Future<void> deleteAccount();
 }
 
 class AuthDataSourceImplement implements AuthDataSource {
@@ -85,6 +89,21 @@ class AuthDataSourceImplement implements AuthDataSource {
     try {
       final response = await dioClient.get(ApiEndpoint.myClassCode);
       return response.data['classCode'] as String;
+    } catch (e) {
+      throw ExceptionHandler.handleException(e);
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      final token = StorageService.get<String>(Constants.keyAuthToken);
+      await dioClient.delete(
+        ApiEndpoint.deleteAccount,
+        options: token != null
+            ? Options(headers: {'Authorization': 'Bearer $token'})
+            : null,
+      );
     } catch (e) {
       throw ExceptionHandler.handleException(e);
     }

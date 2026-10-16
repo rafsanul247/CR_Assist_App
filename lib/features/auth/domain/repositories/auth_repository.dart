@@ -22,4 +22,5 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> logout();
   Future<bool> isLoggedIn();
   Future<Either<Failure, String>> getMyClassCode();
+  Future<Either<Failure, void>> deleteAccount();
 }

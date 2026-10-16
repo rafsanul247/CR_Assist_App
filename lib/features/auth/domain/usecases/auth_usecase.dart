@@ -48,4 +48,8 @@ class AuthUseCase {
   Future<Either<Failure, String>> getMyClassCode() async {
     return await repository.getMyClassCode();
   }
+
+  Future<Either<Failure, void>> deleteAccount() async {
+    return await repository.deleteAccount();
+  }
 }

@@ -21,6 +21,22 @@ class AppFeedback {
     _show(context, message: message, title: title, color: UColors.primary, icon: Iconsax.info_circle);
   }
 
+  static void showErrorWithMessenger(
+    ScaffoldMessengerState messenger, {
+    required String message,
+    String title = 'Invalid information',
+  }) {
+    _showWithMessenger(messenger, message: message, title: title, color: UColors.error, icon: Iconsax.info_circle);
+  }
+
+  static void showSuccessWithMessenger(
+    ScaffoldMessengerState messenger, {
+    required String message,
+    String title = 'Success',
+  }) {
+    _showWithMessenger(messenger, message: message, title: title, color: UColors.success, icon: Iconsax.tick_circle);
+  }
+
   static void _show(
     BuildContext context, {
     required String message,
@@ -29,6 +45,16 @@ class AppFeedback {
     required IconData icon,
   }) {
     final messenger = ScaffoldMessenger.of(context);
+    _showWithMessenger(messenger, message: message, title: title, color: color, icon: icon);
+  }
+
+  static void _showWithMessenger(
+    ScaffoldMessengerState messenger, {
+    required String message,
+    required String title,
+    required Color color,
+    required IconData icon,
+  }) {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(

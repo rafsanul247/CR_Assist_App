@@ -1,3 +1,4 @@
+import 'package:cr_assist/core/common/delete_account_dialog.dart';
 import 'package:cr_assist/core/common/logout_dialog.dart';
 import 'package:cr_assist/core/constants/colors.dart';
 import 'package:cr_assist/core/extensions/context_extension.dart';
@@ -131,7 +132,7 @@ class ProfileScreen extends StatelessWidget {
             
             SizedBox(height: 32.h),
             
-            // Logout Button (optional here too)
+            // Logout Button
             SizedBox(
               width: double.infinity,
               height: 56.h,
@@ -149,6 +150,26 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20.h),
+
+            // Delete Account Button
+            SizedBox(
+              width: double.infinity,
+              height: 56.h,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  DeleteAccountDialog.show(context);
+                },
+                icon: const Icon(Icons.delete_forever, size: 20),
+                label: const Text("Delete Account"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: UColors.error,
+                  foregroundColor: UColors.white,
+                  side: const BorderSide(color: UColors.error),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+              ),
+            ),
+            SizedBox(height: 24.h),
           ],
         ),
       ),

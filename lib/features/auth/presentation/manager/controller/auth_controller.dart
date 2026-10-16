@@ -1,3 +1,4 @@
+import 'package:cr_assist/core/error/failures.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/core/services/fcm_service.dart';
 import 'package:cr_assist/core/storage/storage_service.dart';
@@ -5,6 +6,7 @@ import 'package:cr_assist/core/utils/constant.dart';
 import 'package:cr_assist/features/auth/domain/entities/auth_entity.dart';
 import 'package:cr_assist/features/auth/domain/usecases/auth_usecase.dart';
 import 'package:cr_assist/injection.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
@@ -96,10 +98,40 @@ class AuthController extends GetxController {
   }
 
   Future<void> logout() async {
+    try {
+      await _fcmService.unsubscribeFromCurrentTopic();
+      await _fcmService.dispose();
+    } catch (e) {
+      debugPrint('[FCM] logout unsubscribe error: $e');
+    }
     await _useCase.logout();
-    await _fcmService.dispose();
     user.value = null;
     AppRouter.go('/login');
+  }
+
+  Future<Either<Failure, void>> deleteAccount() async {
+    isLoading.value = true;
+    errorMessage.value = '';
+
+    final result = await _useCase.deleteAccount();
+    isLoading.value = false;
+
+    await result.fold(
+      (failure) async {
+        errorMessage.value = failure.message;
+      },
+      (_) async {
+        try {
+          await _fcmService.unsubscribeFromCurrentTopic();
+          await _fcmService.dispose();
+        } catch (error) {
+          debugPrint('[FCM] deleteAccount unsubscribe error: $error');
+        }
+        user.value = null;
+      },
+    );
+
+    return result;
   }
 
   Future<void> _syncNotifications(UserEntity userData) async {

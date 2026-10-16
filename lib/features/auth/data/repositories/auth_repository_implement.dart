@@ -67,6 +67,23 @@ class AuthRepositoryImplement implements AuthRepository {
 
   @override
   Future<Either<Failure, void>> logout() async {
+    await _clearSessionData();
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteAccount() async {
+    if (!await networkInfo.isConnected) return const Left(NetworkFailure());
+    try {
+      await dataSource.deleteAccount();
+      await _clearSessionData();
+      return const Right(null);
+    } on AppException catch (e) {
+      return Left(_mapExceptionToFailure(e));
+    }
+  }
+
+  Future<void> _clearSessionData() async {
     dioClient.clearAuthToken();
     await StorageService.delete(Constants.keyAuthToken);
     await StorageService.delete(Constants.keyUserId);
@@ -77,7 +94,7 @@ class AuthRepositoryImplement implements AuthRepository {
     await StorageService.delete(Constants.keyUserDeptName);
     await StorageService.delete(Constants.keyUserBatchName);
     await StorageService.delete(Constants.keyUserUniversityName);
-    return const Right(null);
+    await StorageService.delete(Constants.keyUnreadNoticeCount);
   }
 
   @override

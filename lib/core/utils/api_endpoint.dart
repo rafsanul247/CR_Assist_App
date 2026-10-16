@@ -21,6 +21,7 @@ class ApiEndpoint {
   static const String resetPassword = '/auth/reset-password';
   static const String myClassCode = '/auth/my-class-code';
   static const String fcmToken = '/auth/fcm-token';
+  static const String deleteAccount = '/auth/delete-account';
 
   // Semester / Subject / Resource
   static const String semesters = '/semesters';

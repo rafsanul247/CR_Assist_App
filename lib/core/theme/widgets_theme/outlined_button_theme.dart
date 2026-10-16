@@ -36,18 +36,26 @@ class UOutlinedButtonTheme {
 
   /// Returns the current global theme style with an overridden border radius of 12
   static ButtonStyle radius12(BuildContext context) {
-    return Theme.of(context).outlinedButtonTheme.style!.copyWith(
+    final baseStyle = Theme.of(context).outlinedButtonTheme.style ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? darkOutlinedButtonTheme.style!
+            : lightOutlinedButtonTheme.style!);
+    return baseStyle.copyWith(
       shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),        // Use: UOutlinedButtonTheme.radius12(context)
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Use: UOutlinedButtonTheme.radius12(context)
       ),
     );
   }
 
   /// Returns the current global theme style with an overridden border radius of 48
   static ButtonStyle radius48(BuildContext context) {
-    return Theme.of(context).outlinedButtonTheme.style!.copyWith(
+    final baseStyle = Theme.of(context).outlinedButtonTheme.style ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? darkOutlinedButtonTheme.style!
+            : lightOutlinedButtonTheme.style!);
+    return baseStyle.copyWith(
       shape: WidgetStateProperty.all(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(48)),        // Use : UOutlinedButtonTheme.radius48(context)
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(48)), // Use : UOutlinedButtonTheme.radius48(context)
       ),
     );
   }
