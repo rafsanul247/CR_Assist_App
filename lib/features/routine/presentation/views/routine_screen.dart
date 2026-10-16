@@ -46,20 +46,26 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
       if (_controller.isTodayLoading.value && today == null) {
         return const Padding(
           padding: EdgeInsets.fromLTRB(16, 0, 16, 4),
-          child: _TodayCardLoadingPlaceholder(),
+          child: SizedBox(
+            height: 156,
+            child: _TodayCardLoadingPlaceholder(),
+          ),
         );
       }
       if (today == null) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-          child: _TodayCardSurface(
-            onTap: _controller.fetchToday,
-            eyebrow: 'ROUTINE',
-            title: 'Couldn\'t load',
-            subtitle: _controller.todayErrorMessage.value.isEmpty
-                ? 'Tap to try again.'
-                : _controller.todayErrorMessage.value,
-            isUnavailable: true,
+          child: SizedBox(
+            height: 156,
+            child: _TodayCardSurface(
+              onTap: _controller.fetchToday,
+              eyebrow: 'ROUTINE',
+              title: 'Couldn\'t load',
+              subtitle: _controller.todayErrorMessage.value.isEmpty
+                  ? 'Tap to try again.'
+                  : _controller.todayErrorMessage.value,
+              isUnavailable: true,
+            ),
           ),
         );
       }
@@ -106,7 +112,7 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
             );
           },
         );
-        return Padding(
+        return Padding (
           padding: EdgeInsets.fromLTRB(
             hasMultipleSlots ? 8 : 16,
             0,
@@ -144,14 +150,17 @@ class _RoutineTodayCardState extends State<RoutineTodayCard> {
       }
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 4),
-        child: _TodayCardSurface(
-          onTap: widget.onOpenRoutine ?? () => AppRouter.go('/routine'),
-          eyebrow: 'YOUR ACADEMIC PLAN',
-          title: 'Routine',
-          subtitle: _formatRoutineDate(today.date),
-          classCount: today.todayClasses.length,
-          examCount: today.todayExams.length,
-          empty: empty,
+        child: SizedBox(
+          height: 156,
+          child: _TodayCardSurface(
+            onTap: widget.onOpenRoutine ?? () => AppRouter.go('/routine'),
+            eyebrow: 'YOUR ACADEMIC PLAN',
+            title: 'Routine',
+            subtitle: _formatRoutineDate(today.date),
+            classCount: today.todayClasses.length,
+            examCount: today.todayExams.length,
+            empty: empty,
+          ),
         ),
       );
     });
@@ -178,7 +187,7 @@ class _TodayCardLoadingPlaceholder extends StatelessWidget {
     child: Container(
       height: 156,
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
@@ -188,15 +197,34 @@ class _TodayCardLoadingPlaceholder extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _placeholderBar(width: 84, height: 10, opacity: 0.25),
-          const SizedBox(height: 14),
-          _placeholderBar(width: 174, height: 26, opacity: 0.32),
-          const SizedBox(height: 9),
-          _placeholderBar(width: 142, height: 16, opacity: 0.22),
+          _placeholderBar(width: 70, height: 10, opacity: 0.25),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _placeholderBar(width: 140, height: 22, opacity: 0.32),
+                    const SizedBox(height: 6),
+                    _placeholderBar(width: 110, height: 14, opacity: 0.22),
+                  ],
+                ),
+              ),
+              Container(
+                width: 90,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+            ],
+          ),
           const Spacer(),
-          _placeholderBar(width: 216, height: 14, opacity: 0.2),
+          _placeholderBar(width: 180, height: 12, opacity: 0.2),
         ],
       ),
     ),
@@ -255,7 +283,7 @@ class _TodayCardSurface extends StatelessWidget {
           onTap: onTap,
           child: Container(
             width: double.infinity,
-            constraints: const BoxConstraints(minHeight: 156),
+            height: 156,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -283,26 +311,30 @@ class _TodayCardSurface extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _eyebrowText(textTheme),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
                 title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: textTheme.headlineSmall?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.4,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 2),
               Text(
                 dateText,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: textTheme.bodyLarge?.copyWith(
                   color: Colors.white.withValues(alpha: 0.85),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                runSpacing: 8,
+                runSpacing: 6,
                 children: [
                   _countBadge(
                     context,
@@ -322,7 +354,7 @@ class _TodayCardSurface extends StatelessWidget {
         const SizedBox(width: 12),
         Icon(
           Icons.calendar_month_rounded,
-          size: 42,
+          size: 40,
           color: Colors.white.withValues(alpha: 0.9),
         ),
       ],
@@ -471,7 +503,7 @@ class _TodayCardSurface extends StatelessWidget {
     required IconData icon,
     required String text,
   }) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
       color: Colors.white.withValues(alpha: 0.13),
       borderRadius: BorderRadius.circular(22),

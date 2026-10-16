@@ -3,6 +3,7 @@ import 'package:cr_assist/core/extensions/context_extension.dart';
 import 'package:cr_assist/core/routes/app_router.dart';
 import 'package:cr_assist/features/auth/presentation/manager/controller/auth_controller.dart';
 import 'package:cr_assist/features/semesters/presentation/manager/controller/semesters_controller.dart';
+import 'package:cr_assist/features/routine/presentation/manager/controller/routine_controller.dart';
 import 'package:cr_assist/features/routine/presentation/views/routine_screen.dart';
 import 'package:cr_assist/injection.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,15 @@ class SemesterListView extends StatelessWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => controller.fetchSemesters(),
+          onRefresh: () async {
+            await Future.wait([
+              controller.fetchSemesters(),
+              if (Get.isRegistered<RoutineController>())
+                Get.find<RoutineController>().fetchToday()
+              else
+                Get.put(sl<RoutineController>()).fetchToday(),
+            ]);
+          },
           color: UColors.primary,
           backgroundColor: Theme.of(context).colorScheme.surface,
           child: CustomScrollView(
@@ -56,9 +65,12 @@ class SemesterListView extends StatelessWidget {
                     color: Theme.of(context).scaffoldBackgroundColor,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8, bottom: 8),
-                      child: RoutineTodayCard(
-                        key: const ValueKey('home-today-routine-card'),
-                        onOpenRoutine: onRoutineTap,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: RoutineTodayCard(
+                          key: const ValueKey('home-today-routine-card'),
+                          onOpenRoutine: onRoutineTap,
+                        ),
                       ),
                     ),
                   ),
